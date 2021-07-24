@@ -54,7 +54,9 @@ If you need additional load paths you may specify them:
 $ mix sass default assets/css/app.scss --load-path=assets/node_modules/bulma priv/static/assets/app.css
 ```
 
-The executable is kept at `_build/sass`.
+The executable may be kept at `_build/sass`. However in most cases
+running dart-sass requires two files: the portable Dart VM is kept at
+`_build/dart` and the Sass snapshot is kept at `_build/sass.snapshot`.
 
 ### Profiles
 
