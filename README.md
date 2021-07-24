@@ -36,22 +36,22 @@ dart_sass version of choice:
 config :dart_sass, version: "1.36.0"
 ```
 
-Now you can install dart_sass by running:
+Now you can install sass by running:
 
 ```bash
-$ mix dart_sass.install
+$ mix sass.install
 ```
 
-And invoke dart_sass with:
+And invoke sass with:
 
 ```bash
-$ mix dart_sass default assets/css/app.scss priv/static/assets/app.css
+$ mix sass default assets/css/app.scss priv/static/assets/app.css
 ```
 
 If you need additional load paths you may specify them:
 
 ```bash
-$ mix dart_sass default assets/css/app.scss -I assets/node_modules/bulma priv/static/assets/app.css
+$ mix sass default assets/css/app.scss --load-path=assets/node_modules/bulma priv/static/assets/app.css
 ```
 
 The executable is kept at `_build/sass`.
