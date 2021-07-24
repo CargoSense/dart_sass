@@ -1,25 +1,25 @@
-defmodule Esbuild.MixProject do
+defmodule DartSass.MixProject do
   use Mix.Project
 
   @version "0.1.3"
-  @source_url "https://github.com/phoenixframework/esbuild"
+  @source_url "https://github.com/CargoSense/dart_sass"
 
   def project do
     [
-      app: :esbuild,
+      app: :dart_sass,
       version: @version,
       elixir: "~> 1.9",
       deps: deps(),
-      description: "Mix tasks for installing and invoking esbuild",
+      description: "Mix tasks for installing and invoking sass",
       package: [
         links: %{
           "GitHub" => @source_url,
-          "esbuild" => "https://esbuild.github.io"
+          "dart-sass" => "https://sass-lang.com/dart-sass"
         },
         licenses: ["MIT"]
       ],
       docs: [
-        main: "Esbuild",
+        main: "DartSass",
         source_url: @source_url,
         source_ref: "v#{@version}",
         extras: ["CHANGELOG.md"]
@@ -27,7 +27,7 @@ defmodule Esbuild.MixProject do
       xref: [
         exclude: [:httpc, :public_key]
       ],
-      aliases: [test: ["esbuild.install --if-missing", "test"]]
+      aliases: [test: ["sass.install --if-missing", "test"]]
     ]
   end
 
@@ -35,7 +35,7 @@ defmodule Esbuild.MixProject do
     [
       # inets/ssl may be used by Mix tasks but we should not impose them.
       extra_applications: [:logger],
-      mod: {Esbuild, []},
+      mod: {DartSass, []},
       env: [default: []]
     ]
   end

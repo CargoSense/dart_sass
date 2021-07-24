@@ -1,7 +1,7 @@
 import Config
 
-config :esbuild,
-  version: "0.12.15",
+config :dart_sass,
+  version: "1.36.0",
   another: [
     args: ["--version"]
   ]

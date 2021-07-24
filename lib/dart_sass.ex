@@ -1,19 +1,18 @@
-defmodule Esbuild do
+defmodule DartSass do
   @moduledoc """
-  Esbuild is a installer and runner for [esbuild](https://github.com/evanw/esbuild/).
+  DartSass is a installer and runner for [sass](https://sass-lang.com/dart-sass).
 
   ## Profiles
 
-  You can define multiple esbuild profiles. By default, there is a
+  You can define multiple dart_sass profiles. By default, there is a
   profile called `:default` which you can configure its args, current
   directory and environment:
 
-      config :esbuild,
-        version: "0.12.15",
+      config :dart_sass,
+        version: "1.36.0",
         default: [
-          args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
-          cd: Path.expand("../assets", __DIR__),
-          env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+          args: ~w(css/app.scss ../priv/static/assets/app.css),
+          cd: Path.expand("../assets", __DIR__)
         ]
   """
 
@@ -22,11 +21,11 @@ defmodule Esbuild do
 
   @doc false
   def start(_, _) do
-    unless Application.get_env(:esbuild, :version) do
+    unless Application.get_env(:dart_sass, :version) do
       Logger.warn("""
-      esbuild version is not configured. Please set it in your config files:
+      dart_sass version is not configured. Please set it in your config files:
 
-          config :esbuild, :version, "#{latest_version()}"
+          config :dart_sass, :version, "#{latest_version()}"
       """)
     end
 
@@ -38,8 +37,8 @@ defmodule Esbuild do
 
       {:ok, version} ->
         Logger.warn("""
-        Outdated esbuild version. Expected #{configured_version}, got #{version}. \
-        Please run `mix esbuild.install` or update the version in your config files.\
+        Outdated dart-sass version. Expected #{configured_version}, got #{version}. \
+        Please run `mix sass.install` or update the version in your config files.\
         """)
 
       :error ->
@@ -52,14 +51,14 @@ defmodule Esbuild do
   @doc false
   # Latest known version at the time of publishing.
   def latest_version do
-    "0.12.15"
+    "1.36.0"
   end
 
   @doc """
-  Returns the configured esbuild version.
+  Returns the configured dart_sass version.
   """
   def configured_version do
-    Application.get_env(:esbuild, :version, latest_version())
+    Application.get_env(:dart_sass, :version, latest_version())
   end
 
   @doc """
@@ -68,15 +67,14 @@ defmodule Esbuild do
   Returns nil if the profile does not exist.
   """
   def config_for!(profile) when is_atom(profile) do
-    Application.get_env(:esbuild, profile) ||
+    Application.get_env(:dart_sass, profile) ||
       raise ArgumentError, """
-      unknown esbuild profile. Make sure the profile is defined in your config files, such as:
+      unknown dart_sass profile. Make sure the profile is defined in your config files, such as:
 
-          config :esbuild,
+          config :dart_sass,
             #{profile}: [
-              args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
-              cd: Path.expand("../assets", __DIR__),
-              env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+              args: ~w(css/app.scss ../priv/static/assets/app.css),
+              cd: Path.expand("../assets", __DIR__)
             ]
       """
   end
@@ -87,20 +85,36 @@ defmodule Esbuild do
   The executable may not be available if it was not yet installed.
   """
   def bin_path do
-    Path.join(Path.dirname(Mix.Project.build_path()), "esbuild")
+    Path.join(Path.dirname(Mix.Project.build_path()), "sass")
+  end
+
+  def vm_path do
+    Path.join(Path.dirname(Mix.Project.build_path()), "dart")
+  end
+
+  def snapshot_path do
+    Path.join(Path.dirname(Mix.Project.build_path()), "sass.snapshot")
+  end
+
+  def sass_cmd do
+    case :os.type() do
+      {:unix, :darwin} -> {vm_path(), [snapshot_path()]}
+      {:win32, _} -> {vm_path(), [snapshot_path()]}
+      _ -> {bin_path(), []}
+    end
   end
 
   @doc """
-  Returns the version of the esbuild executable.
+  Returns the version of the dart_sass executable.
 
   Returns `{:ok, version_string}` on success or `:error` when the executable
   is not available.
   """
   def bin_version do
-    path = bin_path()
+    {path, args} = sass_cmd()
 
     with true <- File.exists?(path),
-         {result, 0} <- System.cmd(path, ["--version"]) do
+         {result, 0} <- System.cmd(path, args ++ ["--version"]) do
       {:ok, String.trim(result)}
     else
       _ -> :error
@@ -125,18 +139,20 @@ defmodule Esbuild do
       stderr_to_stdout: true
     ]
 
-    bin_path()
-    |> System.cmd(args ++ extra_args, opts)
+    {bin_path, bin_args} = sass_cmd()
+
+    bin_path
+    |> System.cmd(bin_args ++ args ++ extra_args, opts)
     |> elem(1)
   end
 
   @doc """
-  Installs, if not available, and then runs `esbuild`.
+  Installs, if not available, and then runs `dart_sass`.
 
   Returns the same as `run/2`.
   """
   def install_and_run(profile, args) do
-    bin_path = Esbuild.bin_path()
+    bin_path = DartSass.bin_path()
 
     unless File.exists?(bin_path) do
       install()
@@ -146,16 +162,16 @@ defmodule Esbuild do
   end
 
   @doc """
-  Installs esbuild with `configured_version/0`.
+  Installs dart_sass with `configured_version/0`.
   """
   def install do
-    version = Esbuild.configured_version()
-    tmp_dir = Path.join(System.tmp_dir!(), "phx-esbuild")
+    version = DartSass.configured_version()
+    tmp_dir = Path.join(System.tmp_dir!(), "cs-dart-sass")
     File.rm_rf!(tmp_dir)
     File.mkdir_p!(tmp_dir)
 
-    name = "esbuild-#{target()}"
-    url = "https://registry.npmjs.org/#{name}/-/#{name}-#{version}.tgz"
+    name = "dart-sass-#{version}-#{target()}"
+    url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
     tar = fetch_body!(url)
 
     case :erl_tar.extract({:binary, tar}, [:compressed, cwd: tmp_dir]) do
@@ -163,40 +179,45 @@ defmodule Esbuild do
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
-    bin_path = Esbuild.bin_path()
+    bin_path = DartSass.bin_path()
+    snapshot_path = DartSass.snapshot_path()
+    vm_path = DartSass.vm_path()
 
     case :os.type() do
       {:win32, _} ->
-        File.cp!(Path.join([tmp_dir, "package", "esbuild.exe"]), bin_path)
+        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart.exe"]), vm_path)
+        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot_path)
+
+      {:unix, :darwin} ->
+        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart"]), vm_path)
+        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot_path)
 
       _ ->
-        File.cp!(Path.join([tmp_dir, "package", "bin", "esbuild"]), bin_path)
+        File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), bin_path)
     end
   end
 
-  # Available targets: https://github.com/evanw/esbuild/tree/master/npm
+  # Available targets: https://github.com/sass/dart-sass/releases
   defp target do
     case :os.type() do
       {:win32, _} ->
-        "windows-#{:erlang.system_info(:wordsize) * 8}"
+        "windows-#{:erlang.system_info(:wordsize) * 8}.zip"
 
       {:unix, osname} ->
         arch_str = :erlang.system_info(:system_architecture)
         [arch | _] = arch_str |> List.to_string() |> String.split("-")
+        osname = if osname == :darwin, do: :macos, else: osname
 
         case arch do
-          "x86_64" -> "#{osname}-64"
-          "aarch64" -> "#{osname}-arm64"
-          # TODO: remove when we require OTP 24
-          "arm" when osname == :darwin -> "darwin-arm64"
-          _ -> raise "could not download esbuild for architecture: #{arch_str}"
+          "x86_64" -> "#{osname}-x64.tar.gz"
+          _ -> raise "could not download dart_sass for architecture: #{arch_str}"
         end
     end
   end
 
   defp fetch_body!(url) do
     url = String.to_charlist(url)
-    Logger.debug("Downloading esbuild from #{url}")
+    Logger.debug("Downloading dart-sass from #{url}")
 
     {:ok, _} = Application.ensure_all_started(:inets)
     {:ok, _} = Application.ensure_all_started(:ssl)
