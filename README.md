@@ -36,7 +36,7 @@ dart_sass version of choice:
 config :dart_sass, version: "1.36.0"
 ```
 
-Now you can install sass by running:
+Now you can install dart-sass by running:
 
 ```bash
 $ mix sass.install
@@ -58,7 +58,7 @@ The executable may be kept at `_build/sass`. However in most cases
 running dart-sass requires two files: the portable Dart VM is kept at
 `_build/dart` and the Sass snapshot is kept at `_build/sass.snapshot`.
 
-### Profiles
+## Profiles
 
 The first argument to `dart_sass` is the execution profile.
 You can define multiple execution profiles with the current
@@ -76,6 +76,52 @@ config :dart_sass,
 
 When `mix sass default` is invoked, the task arguments will be appended
 to the ones configured above.
+
+## Adding to Phoenix
+
+To add `dart_sass` to an application using Phoenix, you need only four steps.
+
+First add it as a dependency in your `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:dart_sass, "~> 0.1", runtime: Mix.env() == :dev}
+  ]
+end
+```
+
+Now let's configure `dart_sass` to use `assets/css/app.scss` as the input file and
+compile CSS to the output location `priv/static/assets/app.css`:
+
+```elixir
+config :dart_sass,
+  version: "1.36.0",
+  default: [
+    args: ~w(css/app.scss ../priv/static/assets/app.css),
+    cd: Path.expand("../assets", __DIR__)
+  ]
+```
+
+> Make sure the "assets" directory from priv/static is listed in the
+> :only option for Plug.Static in your endpoint file at,
+> for instance `lib/my_app_web/endpoint.ex`.
+
+For development, we want to enable watch mode. So find the `watchers`
+configuration in your `config/dev.exs` and add:
+
+```elixir
+  sass: {DartSass, :install_and_run, [:default, ~w(--embed-source-map --watch)]}
+```
+
+Note we are embedding source maps and enabling the file system watcher.
+
+Finally, back in your `mix.exs`, make sure you have an `assets.deploy`
+alias for deployments, which will also use the `--style=compressed` option:
+
+```elixir
+"assets.deploy": ["sass default --style=compressed", "phx.digest"]
+```
 
 ## Acknowledgements
 
