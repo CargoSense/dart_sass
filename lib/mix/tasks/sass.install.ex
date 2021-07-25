@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Sass.Install do
   def run(args) do
     case OptionParser.parse_head!(args, strict: [if_missing: :boolean]) do
       {opts, []} ->
-        if opts[:if_missing] && File.exists?(DartSass.bin_path()) do
+        if opts[:if_missing] && DartSass.installed?() do
           :ok
         else
           if Code.ensure_loaded?(Mix.Tasks.App.Config) do

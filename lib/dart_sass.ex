@@ -55,7 +55,7 @@ defmodule DartSass do
   end
 
   @doc """
-  Returns the configured dart_sass version.
+  Returns the configured dart-sass version.
   """
   def configured_version do
     Application.get_env(:dart_sass, :version, latest_version())
@@ -80,28 +80,54 @@ defmodule DartSass do
   end
 
   @doc """
+  Checks whether or not dart-sass is installed.
+  """
+  def installed? do
+    case bin_paths() do
+      {sass, nil} -> File.exists?(sass)
+      {vm, snapshot} -> File.exists?(vm) and File.exists?(snapshot)
+    end
+  end
+
+  @doc """
   Returns the path to the executable.
 
   The executable may not be available if it was not yet installed.
   """
   def bin_path do
+    {path, _snapshot} = bin_paths()
+    path
+  end
+
+  @doc """
+  Returns the path to the executable and optional snapshot.
+
+  Depending on your environment, sass may be invoked through a
+  portable instance of the Dart VM. In such case, this function
+  will return a tuple of `{Dart, Snapshot}`, otherwise it will
+  return `{Sass, Nil}`.
+  """
+  def bin_paths do
+    case :os.type() do
+      {:unix, :darwin} -> {vm_path(), snapshot_path()}
+      {:win32, _} -> {vm_path(), snapshot_path()}
+      _ -> {sass_path(), nil}
+    end
+  end
+
+  @doc false
+  def sass_path() do
     Path.join(Path.dirname(Mix.Project.build_path()), "sass")
   end
 
-  def vm_path do
-    Path.join(Path.dirname(Mix.Project.build_path()), "dart")
-  end
-
+  @doc false
   def snapshot_path do
     Path.join(Path.dirname(Mix.Project.build_path()), "sass.snapshot")
   end
 
-  def sass_cmd do
-    case :os.type() do
-      {:unix, :darwin} -> {vm_path(), [snapshot_path()]}
-      {:win32, _} -> {vm_path(), [snapshot_path()]}
-      _ -> {bin_path(), []}
-    end
+  @doc false
+  def vm_path do
+    Path.join(Path.dirname(Mix.Project.build_path()), "dart")
   end
 
   @doc """
@@ -111,13 +137,20 @@ defmodule DartSass do
   is not available.
   """
   def bin_version do
-    {path, args} = sass_cmd()
+    {path, args} = sass(["--version"])
 
     with true <- File.exists?(path),
-         {result, 0} <- System.cmd(path, args ++ ["--version"]) do
+         {result, 0} <- System.cmd(path, args) do
       {:ok, String.trim(result)}
     else
       _ -> :error
+    end
+  end
+
+  defp sass(args) do
+    case bin_paths() do
+      {sass, nil} -> {sass, args}
+      {vm, snapshot} -> {vm, [snapshot] ++ args}
     end
   end
 
@@ -139,22 +172,20 @@ defmodule DartSass do
       stderr_to_stdout: true
     ]
 
-    {bin_path, bin_args} = sass_cmd()
+    {sass_path, args} = sass(args ++ extra_args)
 
-    bin_path
-    |> System.cmd(bin_args ++ args ++ extra_args, opts)
+    sass_path
+    |> System.cmd(args, opts)
     |> elem(1)
   end
 
   @doc """
-  Installs, if not available, and then runs `dart_sass`.
+  Installs, if not available, and then runs `sass`.
 
   Returns the same as `run/2`.
   """
   def install_and_run(profile, args) do
-    bin_path = DartSass.bin_path()
-
-    unless File.exists?(bin_path) do
+    unless installed?() do
       install()
     end
 
@@ -162,7 +193,7 @@ defmodule DartSass do
   end
 
   @doc """
-  Installs dart_sass with `configured_version/0`.
+  Installs dart-sass with `configured_version/0`.
   """
   def install do
     version = DartSass.configured_version()
