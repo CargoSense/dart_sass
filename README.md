@@ -63,7 +63,7 @@ running dart-sass requires two files: the portable Dart VM is kept at
 The first argument to `dart_sass` is the execution profile.
 You can define multiple execution profiles with the current
 directory, the OS environment, and default arguments to the
-`dart_sass` task:
+`sass` task:
 
 ```elixir
 config :dart_sass,
@@ -111,16 +111,20 @@ For development, we want to enable watch mode. So find the `watchers`
 configuration in your `config/dev.exs` and add:
 
 ```elixir
-  sass: {DartSass, :install_and_run, [:default, ~w(--embed-source-map --watch)]}
+  sass: {
+    DartSass,
+    :install_and_run,
+    [:default, ~w(--embed-source-map --source-map-urls=absolute --watch)]
+  }
 ```
 
-Note we are embedding source maps and enabling the file system watcher.
+Note we are embedding source maps with absolute URLs and enabling the file system watcher.
 
 Finally, back in your `mix.exs`, make sure you have an `assets.deploy`
 alias for deployments, which will also use the `--style=compressed` option:
 
 ```elixir
-"assets.deploy": ["sass default --style=compressed", "phx.digest"]
+"assets.deploy": ["sass default --no-source-map --style=compressed", "phx.digest"]
 ```
 
 ## Acknowledgements
