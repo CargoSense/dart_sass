@@ -80,12 +80,15 @@ to the ones configured above.
 ## Adding to Phoenix
 
 To add `dart_sass` to an application using Phoenix, you need only four steps.
+Note that installation also requires that Phoenix watchers can accept `MFArgs`
+tuples– so you must have Phoenix > v1.5.9.
 
 First add it as a dependency in your `mix.exs`:
 
 ```elixir
 def deps do
   [
+    {:phoenix, github: "phoenixframework/phoenix", branch: "v1.5", override: true},
     {:dart_sass, "~> 0.1", runtime: Mix.env() == :dev}
   ]
 end
