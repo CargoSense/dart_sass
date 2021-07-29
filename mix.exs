@@ -8,7 +8,7 @@ defmodule DartSass.MixProject do
     [
       app: :dart_sass,
       version: @version,
-      elixir: "~> 1.9",
+      elixir: "~> 1.10",
       deps: deps(),
       description: "Mix tasks for installing and invoking sass",
       package: [
