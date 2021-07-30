@@ -144,9 +144,20 @@ defmodule DartSass do
   end
 
   defp sass(args) do
-    case bin_paths() do
-      {sass, nil} -> {sass, args}
-      {vm, snapshot} -> {vm, [snapshot] ++ args}
+    {path, args} =
+      case bin_paths() do
+        {sass, nil} -> {sass, args}
+        {vm, snapshot} -> {vm, [snapshot] ++ args}
+      end
+
+    # TODO: Remove when dart-sass will exit when stdin is closed.
+    # Link: https://github.com/sass/dart-sass/pull/1411
+    cond do
+      "--watch" in args and not match?({:win32, _}, :os.type()) ->
+        {script_path(), [path] ++ args}
+
+      true ->
+        {path, args}
     end
   end
 
@@ -169,14 +180,6 @@ defmodule DartSass do
     ]
 
     {path, args} = sass(args ++ extra_args)
-
-    # TODO: Remove when dart-sass will exit when stdin is closed.
-    # Link: https://github.com/sass/dart-sass/pull/1411
-    {path, args} =
-      case :os.type() do
-        {:win32, _} -> {path, args}
-        _ -> {script_path(), [path] ++ args}
-      end
 
     path
     |> System.cmd(args, opts)
