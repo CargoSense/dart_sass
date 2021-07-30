@@ -278,7 +278,7 @@ defmodule DartSass do
             body
 
           other ->
-            raise "couldn't fetch #{url}: #{inspect(other)}"
+            raise "couldn't fetch #{download}: #{inspect(other)}"
         end
 
       other ->
