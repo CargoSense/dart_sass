@@ -90,16 +90,6 @@ defmodule DartSass do
   end
 
   @doc """
-  Returns the path to the executable.
-
-  The executable may not be available if it was not yet installed.
-  """
-  def bin_path do
-    {path, _snapshot} = bin_paths()
-    path
-  end
-
-  @doc """
   Returns the path to the executable and optional snapshot.
 
   Depending on your environment, sass may be invoked through a
@@ -210,7 +200,7 @@ defmodule DartSass do
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
-    bin_path = DartSass.bin_path()
+    sass_path = DartSass.sass_path()
     snapshot_path = DartSass.snapshot_path()
     vm_path = DartSass.vm_path()
 
@@ -224,7 +214,7 @@ defmodule DartSass do
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot_path)
 
       _ ->
-        File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), bin_path)
+        File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), sass_path)
     end
   end
 
