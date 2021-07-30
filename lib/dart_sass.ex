@@ -208,13 +208,23 @@ defmodule DartSass do
     File.rm_rf!(tmp_dir)
     File.mkdir_p!(tmp_dir)
 
-    name = "dart-sass-#{version}-#{target()}"
+    target = target()
+    name = "dart-sass-#{version}-#{target}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
-    tar = fetch_body!(url)
+    archive = fetch_body!(url)
 
-    case :erl_tar.extract({:binary, tar}, [:compressed, cwd: tmp_dir]) do
-      :ok -> :ok
-      other -> raise "couldn't unpack archive: #{inspect(other)}"
+    case target do
+      <<"windows-" <> _::binary>> ->
+        case :zip.unzip(archive, cwd: tmp_dir) do
+          {:ok, _} -> :ok
+          other -> raise "couldn't unpack archive: #{inspect(other)}"
+        end
+
+      _ ->
+        case :erl_tar.extract({:binary, archive}, [:compressed, cwd: tmp_dir]) do
+          :ok -> :ok
+          other -> raise "couldn't unpack archive: #{inspect(other)}"
+        end
     end
 
     sass_path = DartSass.sass_path()
