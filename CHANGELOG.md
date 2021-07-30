@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.1.1 (Unreleased)
+## v0.1.1 (2021-07-30)
 
   * Fix installation path/unzip on windows
   * Add wrapper script to address zombie processes
