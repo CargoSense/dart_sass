@@ -120,6 +120,12 @@ defmodule DartSass do
     Path.join(Path.dirname(Mix.Project.build_path()), "dart")
   end
 
+  # TODO: Remove when dart-sass will exit when stdin is closed.
+  @doc false
+  def script_path() do
+    Path.join(Path.expand("../bin", __DIR__), "dart_sass.bash")
+  end
+
   @doc """
   Returns the version of the dart_sass executable.
 
@@ -162,9 +168,17 @@ defmodule DartSass do
       stderr_to_stdout: true
     ]
 
-    {sass_path, args} = sass(args ++ extra_args)
+    {path, args} = sass(args ++ extra_args)
 
-    sass_path
+    # TODO: Remove when dart-sass will exit when stdin is closed.
+    # Link: https://github.com/sass/dart-sass/pull/1411
+    {path, args} =
+      case :os.type() do
+        {:win32, _} -> {path, args}
+        _ -> {script_path(), [path] ++ args}
+      end
+
+    path
     |> System.cmd(args, opts)
     |> elem(1)
   end
