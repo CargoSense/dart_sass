@@ -239,7 +239,10 @@ defmodule DartSass do
   defp target do
     case :os.type() do
       {:win32, _} ->
-        "windows-#{:erlang.system_info(:wordsize) * 8}.zip"
+        case :erlang.system_info(:wordsize) * 8 do
+          32 -> "windows-ia32.zip"
+          64 -> "windows-x64.zip"
+        end
 
       {:unix, osname} ->
         arch_str = :erlang.system_info(:system_architecture)
