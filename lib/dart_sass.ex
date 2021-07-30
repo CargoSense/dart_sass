@@ -257,7 +257,6 @@ defmodule DartSass do
     cacertfile = CAStore.file_path() |> String.to_charlist()
 
     http_options = [
-      autoredirect: false,
       ssl: [
         verify: :verify_peer,
         cacertfile: cacertfile,
@@ -268,21 +267,22 @@ defmodule DartSass do
       ]
     ]
 
-    case :httpc.request(:get, {url, []}, http_options, []) do
-      {:ok, {{_, 302, _}, headers, _}} ->
-        {'location', download} = List.keyfind(headers, 'location', 0)
-        options = [body_format: :binary]
+    options = [body_format: :binary, headers_as_is: true]
 
-        case :httpc.request(:get, {download, []}, http_options, options) do
-          {:ok, {{_, 200, _}, _, body}} ->
-            body
+    # case :httpc.request(:get, {url, []}, http_options, []) do
+    #   {:ok, {{_, 302, _}, headers, _}} ->
+    #     {'location', download} = List.keyfind(headers, 'location', 0)
 
-          other ->
-            raise "couldn't fetch #{url}: #{inspect(other)}"
-        end
+    case :httpc.request(:get, {url, []}, http_options, options) do
+      {:ok, {{_, 200, _}, _, body}} ->
+        body
 
       other ->
         raise "couldn't fetch #{url}: #{inspect(other)}"
     end
+
+    #   other ->
+    #     raise "couldn't fetch #{url}: #{inspect(other)}"
+    # end
   end
 end
