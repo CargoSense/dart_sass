@@ -90,16 +90,6 @@ defmodule DartSass do
   end
 
   @doc """
-  Returns the path to the executable.
-
-  The executable may not be available if it was not yet installed.
-  """
-  def bin_path do
-    {path, _snapshot} = bin_paths()
-    path
-  end
-
-  @doc """
   Returns the path to the executable and optional snapshot.
 
   Depending on your environment, sass may be invoked through a
@@ -130,6 +120,12 @@ defmodule DartSass do
     Path.join(Path.dirname(Mix.Project.build_path()), "dart")
   end
 
+  # TODO: Remove when dart-sass will exit when stdin is closed.
+  @doc false
+  def script_path() do
+    Path.join(:code.priv_dir(:dart_sass), "dart_sass.bash")
+  end
+
   @doc """
   Returns the version of the dart_sass executable.
 
@@ -148,9 +144,20 @@ defmodule DartSass do
   end
 
   defp sass(args) do
-    case bin_paths() do
-      {sass, nil} -> {sass, args}
-      {vm, snapshot} -> {vm, [snapshot] ++ args}
+    {path, args} =
+      case bin_paths() do
+        {sass, nil} -> {sass, args}
+        {vm, snapshot} -> {vm, [snapshot] ++ args}
+      end
+
+    # TODO: Remove when dart-sass will exit when stdin is closed.
+    # Link: https://github.com/sass/dart-sass/pull/1411
+    cond do
+      "--watch" in args and not match?({:win32, _}, :os.type()) ->
+        {script_path(), [path] ++ args}
+
+      true ->
+        {path, args}
     end
   end
 
@@ -172,9 +179,9 @@ defmodule DartSass do
       stderr_to_stdout: true
     ]
 
-    {sass_path, args} = sass(args ++ extra_args)
+    {path, args} = sass(args ++ extra_args)
 
-    sass_path
+    path
     |> System.cmd(args, opts)
     |> elem(1)
   end
@@ -210,7 +217,7 @@ defmodule DartSass do
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
-    bin_path = DartSass.bin_path()
+    sass_path = DartSass.sass_path()
     snapshot_path = DartSass.snapshot_path()
     vm_path = DartSass.vm_path()
 
@@ -224,7 +231,7 @@ defmodule DartSass do
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot_path)
 
       _ ->
-        File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), bin_path)
+        File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), sass_path)
     end
   end
 
