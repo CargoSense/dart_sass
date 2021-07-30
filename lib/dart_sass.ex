@@ -123,7 +123,7 @@ defmodule DartSass do
   # TODO: Remove when dart-sass will exit when stdin is closed.
   @doc false
   def script_path() do
-    Path.join(Path.expand("../bin", __DIR__), "dart_sass.bash")
+    Path.join(:code.priv_dir(:dart_sass), "dart_sass.bash")
   end
 
   @doc """
