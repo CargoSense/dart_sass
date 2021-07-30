@@ -208,23 +208,13 @@ defmodule DartSass do
     File.rm_rf!(tmp_dir)
     File.mkdir_p!(tmp_dir)
 
-    target = target()
-    name = "dart-sass-#{version}-#{target}"
+    name = "dart-sass-#{version}-#{target()}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
     archive = fetch_body!(url)
 
-    case target do
-      <<"windows-" <> _::binary>> ->
-        case :zip.unzip(archive, cwd: tmp_dir) do
-          {:ok, _} -> :ok
-          other -> raise "couldn't unpack archive: #{inspect(other)}"
-        end
-
-      _ ->
-        case :erl_tar.extract({:binary, archive}, [:compressed, cwd: tmp_dir]) do
-          :ok -> :ok
-          other -> raise "couldn't unpack archive: #{inspect(other)}"
-        end
+    case unpack_archive(Path.extname(name), archive, tmp_dir) do
+      :ok -> :ok
+      other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
     sass_path = DartSass.sass_path()
@@ -243,6 +233,14 @@ defmodule DartSass do
       _ ->
         File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), sass_path)
     end
+  end
+
+  defp unpack_archive(".zip", zip, cwd) do
+    with {:ok, _} <- :zip.unzip(zip, cwd: cwd), do: :ok
+  end
+
+  defp unpack_archive(_, tar, cwd) do
+    :erl_tar.extract({:binary, tar}, [:compressed, cwd: cwd])
   end
 
   # Available targets: https://github.com/sass/dart-sass/releases
