@@ -267,7 +267,7 @@ defmodule DartSass do
       ]
     ]
 
-    options = [body_format: :binary, cookies: :enabled]
+    options = [body_format: :binary]
 
     case :httpc.request(:get, {url, []}, http_options, options) do
       {:ok, {{_, 200, _}, _headers, body}} ->
