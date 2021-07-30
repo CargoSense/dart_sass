@@ -210,9 +210,9 @@ defmodule DartSass do
 
     name = "dart-sass-#{version}-#{target()}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
-    tar = fetch_body!(url)
+    archive = fetch_body!(url)
 
-    case :erl_tar.extract({:binary, tar}, [:compressed, cwd: tmp_dir]) do
+    case unpack_archive(Path.extname(name), archive, tmp_dir) do
       :ok -> :ok
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
@@ -235,11 +235,22 @@ defmodule DartSass do
     end
   end
 
+  defp unpack_archive(".zip", zip, cwd) do
+    with {:ok, _} <- :zip.unzip(zip, cwd: cwd), do: :ok
+  end
+
+  defp unpack_archive(_, tar, cwd) do
+    :erl_tar.extract({:binary, tar}, [:compressed, cwd: cwd])
+  end
+
   # Available targets: https://github.com/sass/dart-sass/releases
   defp target do
     case :os.type() do
       {:win32, _} ->
-        "windows-#{:erlang.system_info(:wordsize) * 8}.zip"
+        case :erlang.system_info(:wordsize) * 8 do
+          32 -> "windows-ia32.zip"
+          64 -> "windows-x64.zip"
+        end
 
       {:unix, osname} ->
         arch_str = :erlang.system_info(:system_architecture)
