@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.0 (Unreleased)
+
+  * Bump dart-sass version to latest
+
 ## v0.1.2 (2021-08-23)
 
   * Fix target detection on FreeBSD (h/t @julp)
