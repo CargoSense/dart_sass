@@ -258,6 +258,7 @@ defmodule DartSass do
         osname = if osname == :darwin, do: :macos, else: osname
 
         case arch do
+          "amd64" -> "#{osname}-x64.tar.gz"
           "x86_64" -> "#{osname}-x64.tar.gz"
           _ -> raise "could not download dart_sass for architecture: #{arch_str}"
         end
