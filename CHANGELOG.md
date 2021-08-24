@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.1.2 (2021-08-23)
+
+  * Fix target detection on FreeBSD (h/t @julp)
+  * Extract archive with charlist cwd option (h/t @michallepicki)
+
 ## v0.1.1 (2021-07-30)
 
   * Fix installation path/unzip on windows
