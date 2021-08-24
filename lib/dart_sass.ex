@@ -236,11 +236,11 @@ defmodule DartSass do
   end
 
   defp unpack_archive(".zip", zip, cwd) do
-    with {:ok, _} <- :zip.unzip(zip, cwd: cwd), do: :ok
+    with {:ok, _} <- :zip.unzip(zip, cwd: to_charlist(cwd)), do: :ok
   end
 
   defp unpack_archive(_, tar, cwd) do
-    :erl_tar.extract({:binary, tar}, [:compressed, cwd: cwd])
+    :erl_tar.extract({:binary, tar}, [:compressed, cwd: to_charlist(cwd)])
   end
 
   # Available targets: https://github.com/sass/dart-sass/releases
