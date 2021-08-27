@@ -80,15 +80,15 @@ to the ones configured above.
 ## Adding to Phoenix
 
 To add `dart_sass` to an application using Phoenix, you need only four steps.
-Note that installation also requires that Phoenix watchers can accept `MFArgs`
-tuples– so you must have Phoenix > v1.5.9.
+Note that installation requires that Phoenix watchers can accept `MFArgs`
+tuples – so you must have Phoenix > v1.5.9.
 
 First add it as a dependency in your `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:phoenix, github: "phoenixframework/phoenix", branch: "v1.5", override: true},
+    {:phoenix, "~> 1.6.0-rc.0"},
     {:dart_sass, "~> 0.1", runtime: Mix.env() == :dev}
   ]
 end
@@ -106,8 +106,12 @@ config :dart_sass,
   ]
 ```
 
-> Make sure the "assets" directory from priv/static is listed in the
-> :only option for Plug.Static in your endpoint file at,
+> Note: if you are using esbuild (the default from Phoenix v1.6),
+> make sure you remove the `import "../css/app.css"` line at the
+> top of assets/js/app.js so `esbuild` stops generating css files.
+
+> Note: make sure the "assets" directory from priv/static is listed
+> in the :only option for Plug.Static in your endpoint file at,
 > for instance `lib/my_app_web/endpoint.ex`.
 
 For development, we want to enable watch mode. So find the `watchers`
@@ -127,7 +131,11 @@ Finally, back in your `mix.exs`, make sure you have an `assets.deploy`
 alias for deployments, which will also use the `--style=compressed` option:
 
 ```elixir
-"assets.deploy": ["sass default --no-source-map --style=compressed", "phx.digest"]
+"assets.deploy": [
+  "esbuild default --minify",
+  "sass default --no-source-map --style=compressed",
+  "phx.digest"
+]
 ```
 
 ## Acknowledgements
