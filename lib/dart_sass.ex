@@ -203,7 +203,7 @@ defmodule DartSass do
   Installs dart-sass with `configured_version/0`.
   """
   def install do
-    version = DartSass.configured_version()
+    version = configured_version()
     tmp_dir = Path.join(System.tmp_dir!(), "cs-dart-sass")
     File.rm_rf!(tmp_dir)
     File.mkdir_p!(tmp_dir)
@@ -217,9 +217,9 @@ defmodule DartSass do
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
-    sass_path = DartSass.sass_path()
-    snapshot_path = DartSass.snapshot_path()
-    vm_path = DartSass.vm_path()
+    sass_path = sass_path()
+    snapshot_path = snapshot_path()
+    vm_path = vm_path()
 
     case :os.type() do
       {:win32, _} ->
