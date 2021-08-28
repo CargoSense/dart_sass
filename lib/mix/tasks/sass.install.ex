@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Sass.Install do
   def run(args) do
     case OptionParser.parse_head!(args, strict: [if_missing: :boolean]) do
       {opts, []} ->
-        if opts[:if_missing] && DartSass.installed?() do
+        if opts[:if_missing] && latest_version?() do
           :ok
         else
           if Code.ensure_loaded?(Mix.Tasks.App.Config) do
@@ -41,5 +41,10 @@ defmodule Mix.Tasks.Sass.Install do
             mix sass.install --if-missing
         """)
     end
+  end
+
+  defp latest_version?() do
+    version = DartSass.configured_version()
+    match?({:ok, ^version}, DartSass.bin_version())
   end
 end
