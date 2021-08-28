@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Sass.Install do
       config :dart_sass, :version, "#{DartSass.latest_version()}"
 
   You can pass the `--if-missing` flag to only install it if
-  one does not yet exist.
+  one does not yet exist at the given version.
   """
 
   @shortdoc "Installs dart-sass under _build"

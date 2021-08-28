@@ -21,15 +21,15 @@ defmodule DartSassTest do
     Mix.Task.rerun("sass.install", ["--if-missing"])
 
     assert ExUnit.CaptureIO.capture_io(fn ->
-      assert DartSass.run(:default, ["--version"]) == 0
-    end) =~ "1.36.0"
+             assert DartSass.run(:default, ["--version"]) == 0
+           end) =~ "1.36.0"
 
     Application.delete_env(:dart_sass, :version)
 
     Mix.Task.rerun("sass.install", ["--if-missing"])
 
     assert ExUnit.CaptureIO.capture_io(fn ->
-      assert DartSass.run(:default, ["--version"]) == 0
-    end) =~ @version
+             assert DartSass.run(:default, ["--version"]) == 0
+           end) =~ @version
   end
 end
