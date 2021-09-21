@@ -4,23 +4,24 @@ defmodule Mix.Tasks.Sass do
 
   Usage:
 
-  ```bash
-  $ mix sass CONTEXT ARGS
-  ```
+      $ mix sass TASK_OPTIONS PROFILE ESBUILD_ARGS
 
   Example:
 
-  ```bash
-  $ mix sass default assets/css/app.scss priv/static/assets/app.css
-  ```
+      $ mix sass default assets/css/app.scss priv/static/assets/app.css
 
   If dart-sass is not installed, it is automatically downloaded.
   Note the arguments given to this task will be appended
   to any configured arguments.
 
   ## Options
+
     * `--runtime-config` - load the runtime configuration before executing
       command
+
+  Note flags to control this Mix task must be given before the profile:
+
+      $ mix sass --runtime-config default assets/css/app.scss
   """
 
   @shortdoc "Invokes sass with the profile and args"
