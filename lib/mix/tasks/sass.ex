@@ -29,7 +29,7 @@ defmodule Mix.Tasks.Sass do
   use Mix.Task
 
   @impl true
-  def run([profile | args] = all) do
+  def run(args) do
     switches = [runtime_config: :boolean]
     {opts, remaining_args} = OptionParser.parse_head!(args, switches: switches)
 
@@ -39,15 +39,18 @@ defmodule Mix.Tasks.Sass do
       Application.ensure_all_started(:dart_sass)
     end
 
-    case DartSass.install_and_run(String.to_atom(profile), remaining_args) do
+    Mix.Task.reenable("sass")
+    install_and_run(remaining_args)
+  end
+
+  defp install_and_run([profile | args] = all) do
+    case DartSass.install_and_run(String.to_atom(profile), args) do
       0 -> :ok
       status -> Mix.raise("`mix sass #{Enum.join(all, " ")}` exited with #{status}")
     end
-
-    Mix.Task.reenable("sass")
   end
 
-  def run([]) do
+  defp install_and_run([]) do
     Mix.raise("`mix sass` expects the profile as argument")
   end
 end
