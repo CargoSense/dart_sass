@@ -4,7 +4,7 @@ defmodule Mix.Tasks.Sass do
 
   Usage:
 
-      $ mix sass TASK_OPTIONS PROFILE ESBUILD_ARGS
+      $ mix sass TASK_OPTIONS PROFILE SASS_ARGS
 
   Example:
 
