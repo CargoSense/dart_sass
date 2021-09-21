@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## v0.2.0 (Unreleased)
+## v0.2.0 (2021-09-21)
 
-  * Bump dart-sass version to latest
+  * No longer load `config/runtime.exs` by default, instead support `--runtime-config` flag
+  * Update initial `sass` version to `1.39.0`
+  * `mix sass.install --if-missing` also checks version
 
 ## v0.1.2 (2021-08-23)
 
