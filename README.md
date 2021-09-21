@@ -13,7 +13,7 @@ in dev:
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.1", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.2", runtime: Mix.env() == :dev}
   ]
 end
 ```
@@ -24,7 +24,7 @@ then it only needs to be a dev dependency:
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.1", only: :dev}
+    {:dart_sass, "~> 0.2", only: :dev}
   ]
 end
 ```
@@ -33,7 +33,7 @@ Once installed, change your `config/config.exs` to pick your
 dart_sass version of choice:
 
 ```elixir
-config :dart_sass, version: "1.36.0"
+config :dart_sass, version: "1.39.0"
 ```
 
 Now you can install dart-sass by running:
@@ -89,7 +89,7 @@ First add it as a dependency in your `mix.exs`:
 def deps do
   [
     {:phoenix, "~> 1.6.0-rc.0"},
-    {:dart_sass, "~> 0.1", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.2", runtime: Mix.env() == :dev}
   ]
 end
 ```
