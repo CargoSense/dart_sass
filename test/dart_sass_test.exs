@@ -32,4 +32,11 @@ defmodule DartSassTest do
              assert DartSass.run(:default, ["--version"]) == 0
            end) =~ @version
   end
+
+  @tag :tmp_dir
+  test "compiles", %{tmp_dir: dir} do
+    dest = Path.join(dir, "app.css")
+    Mix.Task.rerun("sass", ["default", "--no-source-map", "test/fixtures/app.scss", dest])
+    assert File.read!(dest) == "body > p {\n  color: green;\n}\n"
+  end
 end
