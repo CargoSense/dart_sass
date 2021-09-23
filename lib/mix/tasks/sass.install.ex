@@ -12,8 +12,14 @@ defmodule Mix.Tasks.Sass.Install do
 
       config :dart_sass, :version, "#{DartSass.latest_version()}"
 
-  You can pass the `--if-missing` flag to only install it if
-  one does not yet exist at the given version.
+  ## Options
+
+    * `--runtime-config` - load the runtime configuration
+        before executing command
+
+    * `--if-missing` - install only if the given version
+        does not exist
+
   """
 
   @shortdoc "Installs dart-sass under _build"
@@ -21,8 +27,12 @@ defmodule Mix.Tasks.Sass.Install do
 
   @impl true
   def run(args) do
-    case OptionParser.parse_head!(args, strict: [if_missing: :boolean]) do
+    valid_options = [runtime_config: :boolean, if_missing: :boolean]
+
+    case OptionParser.parse_head!(args, strict: valid_options) do
       {opts, []} ->
+        if opts[:runtime_config], do: Mix.Task.run("app.config")
+
         if opts[:if_missing] && latest_version?() do
           :ok
         else
@@ -38,6 +48,7 @@ defmodule Mix.Tasks.Sass.Install do
         Invalid arguments to sass.install, expected one of:
 
             mix sass.install
+            mix sass.install --runtime-config
             mix sass.install --if-missing
         """)
     end
