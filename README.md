@@ -67,7 +67,7 @@ directory, the OS environment, and default arguments to the
 
 ```elixir
 config :dart_sass,
-  version: "1.36.0",
+  version: "1.39.0",
   default: [
     args: ~w(css/app.scss ../priv/static/assets/app.css),
     cd: Path.expand("../assets", __DIR__)
@@ -99,7 +99,7 @@ compile CSS to the output location `priv/static/assets/app.css`:
 
 ```elixir
 config :dart_sass,
-  version: "1.36.0",
+  version: "1.39.0",
   default: [
     args: ~w(css/app.scss ../priv/static/assets/app.css),
     cd: Path.expand("../assets", __DIR__)
