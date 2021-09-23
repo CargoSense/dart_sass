@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.1 (2021-09-23)
+
+  * Apply missing `--runtime-config` flag check to `mix sass.install`
+
 ## v0.2.0 (2021-09-21)
 
   * No longer load `config/runtime.exs` by default, instead support `--runtime-config` flag
