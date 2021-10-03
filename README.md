@@ -77,6 +77,16 @@ config :dart_sass,
 When `mix sass default` is invoked, the task arguments will be appended
 to the ones configured above.
 
+## Specifying Binary Target
+Currently the dart-sass team does not fully support Apple Silicon (M1 processors for example), in order to help stopgap this you can change the binary target DartSass attempts to download & use. Full options available on the [dart-sass releases](https://github.com/sass/dart-sass/releases).
+
+```elixir
+config :dart_sass,
+  version: "1.39.0",
+  binary_download_target: "macos-x64.tar.gz",
+  ...
+```
+
 ## Adding to Phoenix
 
 To add `dart_sass` to an application using Phoenix, you need only four steps.

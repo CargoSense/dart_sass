@@ -244,7 +244,15 @@ defmodule DartSass do
   end
 
   # Available targets: https://github.com/sass/dart-sass/releases
+  # Can be manually specified for environments like the Apple M1 (for example: macos-x64 instead of aarch64-x64 to use Intel with Rosetta)
   defp target do
+    case Application.fetch_env(:dart_sass, :binary_download_target) do
+      {:ok, target} -> target
+      :error -> guess_target()
+    end
+  end
+
+  defp guess_target do
     case :os.type() do
       {:win32, _} ->
         case :erlang.system_info(:wordsize) * 8 do
