@@ -257,6 +257,14 @@ defmodule DartSass do
         [arch | _] = arch_str |> List.to_string() |> String.split("-")
         osname = if osname == :darwin, do: :macos, else: osname
 
+        arch =
+          if osname == :macos and arch == "aarch64" do
+            # Using Rosetta2 for M1 until dart_sass runs native
+            "amd64"
+          else
+            arch
+          end
+
         case arch do
           "amd64" -> "#{osname}-x64.tar.gz"
           "x86_64" -> "#{osname}-x64.tar.gz"
