@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.3.0 (2021-10-04)
+
+  * Use Rosetta2 for Apple M1 architectures until dart-sass ships native
 ## v0.2.1 (2021-09-23)
 
   * Apply missing `--runtime-config` flag check to `mix sass.install`
