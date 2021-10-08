@@ -138,6 +138,21 @@ alias for deployments, which will also use the `--style=compressed` option:
 ]
 ```
 
+## FAQ
+### Compatibility with Alpine Linux (`mix sass default` exited with 2)
+Dart-native executables rely on [glibc](https://www.gnu.org/software/libc/) to be present. Because Alpine Linux is uses [musl](https://musl.libc.org/) instead, you have to add the package [alpine-pkg-glibc](https://github.com/sgerrand/alpine-pkg-glibc) to your installation. Follow the installation guide in the README.
+
+Example for Docker (has to be added before running `mix sass`):
+```Dockerfile
+RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
+RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk
+RUN apk add glibc-2.34-r0.apk
+```
+
+In case you get the error `../../runtime/bin/eventhandler_linux.cc: 412: error: Failed to start event handler thread 1`, it means that your Docker installation or the used Docker-in-Docker image, is using a version below Docker 20.10.6. This error is related to an [updated version of the musl library](https://about.gitlab.com/blog/2021/08/26/its-time-to-upgrade-docker-engine). It can be resolved by using the [alpine-pkg-glibc](https://github.com/sgerrand/alpine-pkg-glibc) with the version 2.33 instead of 2.34.
+
+Notes: The Alpine package gcompat vs libc6-compat will not work.
+
 ## Acknowledgements
 
 This package is based on the excellent [esbuild](https://github.com/phoenixframework/esbuild) by Wojtek Mach and José Valim.
