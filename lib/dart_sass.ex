@@ -258,7 +258,7 @@ defmodule DartSass do
         osname = if osname == :darwin, do: :macos, else: osname
 
         arch =
-          if osname == :macos and arch == "aarch64" do
+          if osname == :macos and arch in ["aarch64", "arm"] do
             # Using Rosetta2 for M1 until dart_sass runs native
             "amd64"
           else
