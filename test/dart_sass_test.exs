@@ -1,7 +1,7 @@
 defmodule DartSassTest do
   use ExUnit.Case, async: true
 
-  @version "1.39.0"
+  @version "1.43.4"
 
   test "run on default" do
     assert ExUnit.CaptureIO.capture_io(fn ->
@@ -16,13 +16,13 @@ defmodule DartSassTest do
   end
 
   test "updates on install" do
-    Application.put_env(:dart_sass, :version, "1.36.0")
+    Application.put_env(:dart_sass, :version, "1.43.3")
 
     Mix.Task.rerun("sass.install", ["--if-missing"])
 
     assert ExUnit.CaptureIO.capture_io(fn ->
              assert DartSass.run(:default, ["--version"]) == 0
-           end) =~ "1.36.0"
+           end) =~ "1.43.3"
 
     Application.delete_env(:dart_sass, :version)
 
