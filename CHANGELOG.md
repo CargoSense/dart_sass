@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.1
+
+  * Allow `config :dart_sass, :sass_path, path` to configure the path to the Sass snapshot (or executable)
+  * Allow `config :dart_sass, :dart_path, path` to configure the path to the Dart executable
+  * Support OTP 24 on Apple M1 architectures (via Rosetta2)
+
 ## v0.3.0 (2021-10-04)
 
   * Use Rosetta2 for Apple M1 architectures until dart-sass ships native
