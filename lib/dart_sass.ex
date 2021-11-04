@@ -253,14 +253,19 @@ defmodule DartSass do
 
     case platform do
       %{platform: :linux, cmd: sass} ->
+        File.rm(sass)
         File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), sass)
 
       %{platform: :macos, cmd: dart, args: [snapshot]} ->
+        File.rm(dart)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart"]), dart)
+        File.rm(snapshot)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
 
       %{platform: :windows, cmd: dart, args: [snapshot]} ->
+        File.rm(dart)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart.exe"]), dart)
+        File.rm(snapshot)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
     end
   end
