@@ -2,13 +2,13 @@
 
 ## v0.3.1
 
+  * Attach system target architecture to saved esbuild executable (h/t @cw789)
   * Use user cache directory (h/t @josevalim)
   * Add support for 32bit linux (h/t @derek-zhou)
   * Support `HTTP_PROXY/HTTPS_PROXY` to fetch esbuild (h/t @iaddict)
   * Update Sass version to `1.43.4`
   * Fallback to _build if Mix.Project is not available
-  * Allow `config :dart_sass, :sass_path, path` to configure the path to the Sass snapshot (or executable)
-  * Allow `config :dart_sass, :dart_path, path` to configure the path to the Dart executable
+  * Allow `config :dart_sass, :path, path` to configure the path to the Sass executable (or snapshot)
   * Support OTP 24 on Apple M1 architectures (via Rosetta2)
 
 ## v0.3.0 (2021-10-04)

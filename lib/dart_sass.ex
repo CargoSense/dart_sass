@@ -17,31 +17,37 @@ defmodule DartSass do
 
   ## Dart Sass configuration
 
-  There are three global configurations for the `dart_sass` application:
+  There are two global configurations for the `dart_sass` application:
 
     * `:version` - the expected Sass version.
 
-    * `:sass_path` - the path to the Sass snapshot or executable. By default
+    * `:path` - the path to the Sass executable. By default
       it is automatically downloaded and placed inside the `_build` directory
-      of your current app.
+      of your current app. Note that if your system architecture requires a
+      separate Dart VM executable to run, then `:path` should be defined as a
+      list of absolute paths.
 
-    * `:dart_path` - the path to the Dart VM executable. By default it is
-      automatically downloaded and placed inside the `_build` directory
-      of your current app. Note that the Dart Sass release for your
-      operating system may not require a separate Dart executable.
+  Overriding the `:path` is not recommended, as we will automatically
+  download and manage `sass` for you. But in case you can't download
+  it (for example, the GitHub releases are behind a proxy), you may want to
+  set the `:path` to a configurable system location.
 
-  Overriding the `:sass_path` or `:dart_path` option is not recommended,
-  as we will automatically download and manage Dart Sass for you,
-  but in case you can't download it (for example, you are building
-  from source), you may want to set the paths to a configurable
-  system location. In your config files, do:
+  For instance, you can install `sass` globally with `npm`:
 
-      config :dart_sass,
-        sass_path: System.get_env("MIX_SASS_PATH")
-        dart_path: System.get_env("MIX_SASS_DART_PATH")
+      $ npm install -g sass
 
-  And then you can install Dart Sass elsewhere and configure the relevant
-  environment variables.
+  Then the executable will be at:
+
+      NPM_ROOT/sass/sass.js
+
+  Where `NPM_ROOT` is the result of `npm root -g`.
+
+  Once you find the location of the executable, you can store it in a
+  `MIX_SASS_PATH` environment variable, which you can then read in
+  your configuration file:
+
+      config :dart_sass, path: System.get_env("MIX_SASS_PATH")
+
   """
 
   use Application
@@ -108,51 +114,23 @@ defmodule DartSass do
   end
 
   @doc """
-  Checks whether or not dart-sass is installed.
+  Returns the path to the `sass` executable.
+
+  Depending on your system target architecture, the path may be
+  preceeded by the path to the Dart VM executable.
   """
-  def installed? do
-    case detect_platform() do
-      %{cmd: sass, args: []} -> File.exists?(sass)
-      %{cmd: dart, args: [snapshot]} -> File.exists?(dart) and File.exists?(snapshot)
-    end
-  end
+  def bin_path do
+    platform = platform()
 
-  @doc """
-  Returns information about the current environment.
-  """
-  def detect_platform do
-    case :os.type() do
-      {:unix, :darwin} ->
-        %{platform: :macos, cmd: dart_path(), args: [snapshot_path()]}
+    cond do
+      env_path = Application.get_env(:dart_sass, :path) ->
+        List.wrap(env_path)
 
-      {:unix, osname} ->
-        %{platform: osname, cmd: sass_path(), args: []}
+      Code.ensure_loaded?(Mix.Project) ->
+        bin_path(platform, Path.dirname(Mix.Project.build_path()))
 
-      {:win32, _osname} ->
-        %{platform: :windows, cmd: dart_path(), args: [snapshot_path()]}
-    end
-  end
-
-  @doc false
-  def dart_path do
-    Application.get_env(:dart_sass, :dart_path) || build_path("dart")
-  end
-
-  @doc false
-  def snapshot_path do
-    Application.get_env(:dart_sass, :sass_path) || build_path("sass.snapshot")
-  end
-
-  @doc false
-  def sass_path do
-    Application.get_env(:dart_sass, :sass_path) || build_path("sass")
-  end
-
-  defp build_path(path) do
-    if Code.ensure_loaded?(Mix.Project) do
-      Path.join(Path.dirname(Mix.Project.build_path()), path)
-    else
-      "_build/#{path}"
+      true ->
+        bin_path(platform, "_build")
     end
   end
 
@@ -169,29 +147,22 @@ defmodule DartSass do
   is not available.
   """
   def bin_version do
-    {path, args} = sass(["--version"])
+    path = bin_path()
 
-    with true <- File.exists?(path),
-         {result, 0} <- System.cmd(path, args) do
+    with true <- path_exists?(path),
+         {result, 0} <- cmd(path, ["--version"]) do
       {:ok, String.trim(result)}
     else
       _ -> :error
     end
   end
 
-  defp sass(extra_args) do
-    %{cmd: cmd, args: args, platform: platform} = detect_platform()
-    args = args ++ extra_args
+  defp cmd(path, args) do
+    cmd(path, args, [])
+  end
 
-    # TODO: Remove when dart-sass will exit when stdin is closed.
-    # Link: https://github.com/sass/dart-sass/pull/1411
-    cond do
-      "--watch" in args and platform != :windows ->
-        {script_path(), [cmd] ++ args}
-
-      true ->
-        {cmd, args}
-    end
+  defp cmd([command | args], extra_args, opts) do
+    System.cmd(command, args ++ extra_args, opts)
   end
 
   @doc """
@@ -203,7 +174,7 @@ defmodule DartSass do
   """
   def run(profile, extra_args) when is_atom(profile) and is_list(extra_args) do
     config = config_for!(profile)
-    args = config[:args] || []
+    config_args = config[:args] || []
 
     opts = [
       cd: config[:cd] || File.cwd!(),
@@ -212,10 +183,20 @@ defmodule DartSass do
       stderr_to_stdout: true
     ]
 
-    {path, args} = sass(args ++ extra_args)
+    args = config_args ++ extra_args
+    path = bin_path()
+
+    # TODO: Remove when dart-sass will exit when stdin is closed.
+    # Link: https://github.com/sass/dart-sass/pull/1411
+    path =
+      if "--watch" in args and platform() != :windows do
+        [script_path() | path]
+      else
+        path
+      end
 
     path
-    |> System.cmd(args, opts)
+    |> cmd(args, opts)
     |> elem(1)
   end
 
@@ -225,7 +206,7 @@ defmodule DartSass do
   Returns the same as `run/2`.
   """
   def install_and_run(profile, args) do
-    unless installed?() do
+    unless path_exists?(bin_path()) do
       install()
     end
 
@@ -244,8 +225,8 @@ defmodule DartSass do
         freshdir_p(Path.join(System.tmp_dir!(), "cs-sass")) ||
         raise "could not install sass. Set MIX_XDG=1 and then set XDG_CACHE_HOME to the path you want to use as cache"
 
-    platform = detect_platform()
-    name = "dart-sass-#{version}-#{target(platform)}"
+    platform = platform()
+    name = "dart-sass-#{version}-#{target_extname(platform)}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
     archive = fetch_body!(url)
 
@@ -254,23 +235,56 @@ defmodule DartSass do
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
+    path = bin_path()
+
     case platform do
-      %{platform: :linux, cmd: sass} ->
+      :linux ->
+        [sass | _] = path
         File.rm(sass)
         File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), sass)
 
-      %{platform: :macos, cmd: dart, args: [snapshot]} ->
+      :macos ->
+        [dart, snapshot | _] = path
         File.rm(dart)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart"]), dart)
         File.rm(snapshot)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
 
-      %{platform: :windows, cmd: dart, args: [snapshot]} ->
+      :windows ->
+        [dart, snapshot | _] = path
         File.rm(dart)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart.exe"]), dart)
         File.rm(snapshot)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
     end
+  end
+
+  defp bin_path(platform, base_path) do
+    target = target(platform)
+
+    case platform do
+      :linux ->
+        [Path.join(base_path, "sass-#{target}")]
+
+      _ ->
+        [
+          Path.join(base_path, "dart-#{target}"),
+          Path.join(base_path, "sass.snapshot-#{target}")
+        ]
+    end
+  end
+
+  defp platform do
+    case :os.type() do
+      {:unix, :darwin} -> :macos
+      {:unix, :linux} -> :linux
+      {:unix, osname} -> raise "dart_sass is not available for osname: #{inspect(osname)}"
+      {:win32, _} -> :windows
+    end
+  end
+
+  defp path_exists?(path) do
+    Enum.all?(path, &File.exists?/1)
   end
 
   defp freshdir_p(path) do
@@ -290,15 +304,24 @@ defmodule DartSass do
     :erl_tar.extract({:binary, tar}, [:compressed, cwd: to_charlist(cwd)])
   end
 
-  # Available targets: https://github.com/sass/dart-sass/releases
-  defp target(%{platform: :windows}) do
-    case :erlang.system_info(:wordsize) * 8 do
-      32 -> "windows-ia32.zip"
-      64 -> "windows-x64.zip"
+  defp target_extname(platform) do
+    target = target(platform)
+
+    case platform do
+      :windows -> "#{target}.zip"
+      _ -> "#{target}.tar.gz"
     end
   end
 
-  defp target(%{platform: platform}) do
+  # Available targets: https://github.com/sass/dart-sass/releases
+  defp target(:windows) do
+    case :erlang.system_info(:wordsize) * 8 do
+      32 -> "windows-ia32"
+      64 -> "windows-x64"
+    end
+  end
+
+  defp target(platform) do
     arch_str = :erlang.system_info(:system_architecture)
     [arch | _] = arch_str |> List.to_string() |> String.split("-")
 
@@ -313,11 +336,11 @@ defmodule DartSass do
       end
 
     case arch do
-      "amd64" -> "#{platform}-x64.tar.gz"
-      "x86_64" -> "#{platform}-x64.tar.gz"
-      "i686" -> "#{platform}-ia32.tar.gz"
-      "i386" -> "#{platform}-ia32.tar.gz"
-      _ -> raise "could not download dart_sass for architecture: #{arch_str}"
+      "amd64" -> "#{platform}-x64"
+      "x86_64" -> "#{platform}-x64"
+      "i686" -> "#{platform}-ia32"
+      "i386" -> "#{platform}-ia32"
+      _ -> raise "dart_sass not available for architecture: #{arch_str}"
     end
   end
 
