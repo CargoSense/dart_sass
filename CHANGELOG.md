@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.3.1
+## v0.4.0 (2022-01-19)
 
   * Update Sass version to `1.49.0`
   * Attach system target architecture to saved esbuild executable (h/t @cw789)
