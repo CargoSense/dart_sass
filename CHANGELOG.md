@@ -2,6 +2,7 @@
 
 ## v0.3.1
 
+  * Add support for 32bit linux (h/t @derek-zhou)
   * Support `HTTP_PROXY/HTTPS_PROXY` to fetch esbuild (h/t @iaddict)
   * Update Sass version to `1.43.4`
   * Fallback to _build if Mix.Project is not available

@@ -303,6 +303,8 @@ defmodule DartSass do
     case arch do
       "amd64" -> "#{platform}-x64.tar.gz"
       "x86_64" -> "#{platform}-x64.tar.gz"
+      "i686" -> "#{platform}-ia32.tar.gz"
+      "i386" -> "#{platform}-ia32.tar.gz"
       _ -> raise "could not download dart_sass for architecture: #{arch_str}"
     end
   end
