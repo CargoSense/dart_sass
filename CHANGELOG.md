@@ -2,6 +2,7 @@
 
 ## v0.3.1
 
+  * Use user cache directory (h/t @josevalim)
   * Add support for 32bit linux (h/t @derek-zhou)
   * Support `HTTP_PROXY/HTTPS_PROXY` to fetch esbuild (h/t @iaddict)
   * Update Sass version to `1.43.4`

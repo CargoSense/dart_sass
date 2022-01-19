@@ -237,9 +237,12 @@ defmodule DartSass do
   """
   def install do
     version = configured_version()
-    tmp_dir = Path.join(System.tmp_dir!(), "cs-dart-sass")
-    File.rm_rf!(tmp_dir)
-    File.mkdir_p!(tmp_dir)
+    tmp_opts = if System.get_env("MIX_XDG"), do: %{os: :linux}, else: %{}
+
+    tmp_dir =
+      freshdir_p(:filename.basedir(:user_cache, "cs-sass", tmp_opts)) ||
+        freshdir_p(Path.join(System.tmp_dir!(), "cs-sass")) ||
+        raise "could not install sass. Set MIX_XDG=1 and then set XDG_CACHE_HOME to the path you want to use as cache"
 
     platform = detect_platform()
     name = "dart-sass-#{version}-#{target(platform)}"
@@ -267,6 +270,15 @@ defmodule DartSass do
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart.exe"]), dart)
         File.rm(snapshot)
         File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
+    end
+  end
+
+  defp freshdir_p(path) do
+    with {:ok, _} <- File.rm_rf(path),
+         :ok <- File.mkdir_p(path) do
+      path
+    else
+      _ -> nil
     end
   end
 
