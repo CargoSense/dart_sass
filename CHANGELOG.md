@@ -2,6 +2,7 @@
 
 ## v0.3.1
 
+  * Support `HTTP_PROXY/HTTPS_PROXY` to fetch esbuild (h/t @iaddict)
   * Update Sass version to `1.43.4`
   * Allow `config :dart_sass, :sass_path, path` to configure the path to the Sass snapshot (or executable)
   * Allow `config :dart_sass, :dart_path, path` to configure the path to the Dart executable
