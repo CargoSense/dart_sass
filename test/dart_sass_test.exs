@@ -33,6 +33,14 @@ defmodule DartSassTest do
            end) =~ @version
   end
 
+  test "errors on invalid profile" do
+    assert_raise ArgumentError,
+                 ~r<unknown dart_sass profile. Make sure the profile named :"assets/css/app.scss" is defined>,
+                 fn ->
+                   assert DartSass.run(:"assets/css/app.scss", ["../priv/static/assets/app.css"])
+                 end
+  end
+
   @tag :tmp_dir
   test "compiles", %{tmp_dir: dir} do
     dest = Path.join(dir, "app.css")

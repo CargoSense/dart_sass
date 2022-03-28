@@ -103,11 +103,11 @@ defmodule DartSass do
   def config_for!(profile) when is_atom(profile) do
     Application.get_env(:dart_sass, profile) ||
       raise ArgumentError, """
-      unknown dart_sass profile. Make sure the profile is defined in your config files, such as:
+      unknown dart_sass profile. Make sure the profile named #{inspect(profile)} is defined in your config files, such as:
 
           config :dart_sass,
             #{profile}: [
-              args: ~w(css/app.scss ../priv/static/assets/app.css),
+              args: ~w(css/app.scss:../priv/static/assets/app.css),
               cd: Path.expand("../assets", __DIR__)
             ]
       """
