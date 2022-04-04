@@ -325,8 +325,18 @@ defmodule DartSass do
     arch_str = :erlang.system_info(:system_architecture)
     [arch | _] = arch_str |> List.to_string() |> String.split("-")
 
+    IO.inspect(platform, label: "PLATFORM")
+    IO.inspect(arch_str, label: "arch_str")
+
     # TODO: remove "arm" when we require OTP 24
-    arch =  "amd64"
+    arch =
+      if arch in ["aarch64", "arm"] do
+        # Using Rosetta2 for M1 until sass/dart-sass runs native
+        # Link: https://github.com/sass/dart-sass/issues/1125
+        "amd64"
+      else
+        arch
+      end
 
 
     case arch do
