@@ -325,15 +325,12 @@ defmodule DartSass do
     arch_str = :erlang.system_info(:system_architecture)
     [arch | _] = arch_str |> List.to_string() |> String.split("-")
 
-    IO.inspect(platform, label: "PLATFORM")
-    IO.inspect(arch_str, label: "arch_str")
-    IO.inspect(arch, label: "arch")
-
     case arch do
+      "aarch64" -> "#{platform}-arm64"
       "x86_64" -> "#{platform}-x64"
       "i686" -> "#{platform}-ia32"
       "i386" -> "#{platform}-ia32"
-      _ -> "#{platform}-arm64"
+      _ -> raise "dart_sass not available for architecture: #{arch_str}"
     end
   end
 
