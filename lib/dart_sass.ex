@@ -341,7 +341,7 @@ defmodule DartSass do
       "x86_64" -> "#{platform}-x64"
       "i686" -> "#{platform}-ia32"
       "i386" -> "#{platform}-ia32"
-      _ -> -> "#{platform}-x64"
+      _ -> "#{platform}-x64"
     end
   end
 
