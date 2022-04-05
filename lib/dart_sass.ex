@@ -329,14 +329,19 @@ defmodule DartSass do
     IO.inspect(arch_str, label: "arch_str")
     IO.inspect(arch, label: "arch")
 
-
+    arch =
+      if arch == "aarch64" do
+        # Using Rosetta2 for M1 until dart_sass runs native
+        "amd64"
+      else
+        arch
+      end
 
     case arch do
-      "amd64" -> "#{platform}-x64"
       "x86_64" -> "#{platform}-x64"
       "i686" -> "#{platform}-ia32"
       "i386" -> "#{platform}-ia32"
-      _ -> raise "dart_sass not available for architecture: #{arch_str}"
+      _ -> -> "#{platform}-x64"
     end
   end
 
