@@ -328,6 +328,7 @@ defmodule DartSass do
     case arch do
       "amd64" -> "#{platform}-x64"
       "aarch64" -> "#{platform}-arm64"
+      "arm" -> "#{platform}-arm64"
       "x86_64" -> "#{platform}-x64"
       "i686" -> "#{platform}-ia32"
       "i386" -> "#{platform}-ia32"
