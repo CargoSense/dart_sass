@@ -1,7 +1,7 @@
 defmodule DartSassTest do
   use ExUnit.Case, async: true
 
-  @version "1.49.0"
+  @version "1.49.11"
 
   test "run on default" do
     assert ExUnit.CaptureIO.capture_io(fn ->

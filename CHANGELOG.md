@@ -2,7 +2,7 @@
 
 ## v0.4.0 (2022-01-19)
 
-  * Update Sass version to `1.49.0`
+  * Update Sass version to `1.49.11`
   * Attach system target architecture to saved esbuild executable (h/t @cw789)
   * Use user cache directory (h/t @josevalim)
   * Add support for 32bit linux (h/t @derek-zhou)
