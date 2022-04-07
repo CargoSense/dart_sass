@@ -140,10 +140,13 @@ alias for deployments, which will also use the `--style=compressed` option:
 ```
 
 ## FAQ
+
 ### Compatibility with Alpine Linux (`mix sass default` exited with 2)
+
 Dart-native executables rely on [glibc](https://www.gnu.org/software/libc/) to be present. Because Alpine Linux uses [musl](https://musl.libc.org/) instead, you have to add the package [alpine-pkg-glibc](https://github.com/sgerrand/alpine-pkg-glibc) to your installation. Follow the installation guide in the README.
 
 Example for Docker (has to be added before running `mix sass`):
+
 ```Dockerfile
 RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
 RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk
