@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.5.0
+
+- Support upstream arm64 binaries
+- Update Sass version to `1.49.11`
+
 ## v0.4.0 (2022-01-19)
 
 - Update Sass version to `1.49.0`

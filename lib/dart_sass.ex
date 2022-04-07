@@ -325,6 +325,7 @@ defmodule DartSass do
     arch_str = :erlang.system_info(:system_architecture)
     [arch | _] = arch_str |> List.to_string() |> String.split("-")
 
+    # TODO: remove "arm" when we require OTP 24
     case arch do
       "amd64" -> "#{platform}-x64"
       "aarch64" -> "#{platform}-arm64"
