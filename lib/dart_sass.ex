@@ -9,7 +9,7 @@ defmodule DartSass do
   directory and environment:
 
       config :dart_sass,
-        version: "1.49.0",
+        version: "1.49.11",
         default: [
           args: ~w(css/app.scss ../priv/static/assets/app.css),
           cd: Path.expand("../assets", __DIR__)
@@ -85,7 +85,7 @@ defmodule DartSass do
   @doc false
   # Latest known version at the time of publishing.
   def latest_version do
-    "1.49.0"
+    "1.49.11"
   end
 
   @doc """
@@ -325,18 +325,10 @@ defmodule DartSass do
     arch_str = :erlang.system_info(:system_architecture)
     [arch | _] = arch_str |> List.to_string() |> String.split("-")
 
-    # TODO: remove "arm" when we require OTP 24
-    arch =
-      if platform == :macos and arch in ["aarch64", "arm"] do
-        # Using Rosetta2 for M1 until sass/dart-sass runs native
-        # Link: https://github.com/sass/dart-sass/issues/1125
-        "amd64"
-      else
-        arch
-      end
-
     case arch do
       "amd64" -> "#{platform}-x64"
+      "aarch64" -> "#{platform}-arm64"
+      "arm" -> "#{platform}-arm64"
       "x86_64" -> "#{platform}-x64"
       "i686" -> "#{platform}-ia32"
       "i386" -> "#{platform}-ia32"
