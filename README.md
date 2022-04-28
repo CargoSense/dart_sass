@@ -13,7 +13,7 @@ in dev:
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.4", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.5", runtime: Mix.env() == :dev}
   ]
 end
 ```
@@ -24,7 +24,7 @@ then it only needs to be a dev dependency:
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.4", only: :dev}
+    {:dart_sass, "~> 0.5", only: :dev}
   ]
 end
 ```
@@ -90,7 +90,7 @@ First add it as a dependency in your `mix.exs`:
 def deps do
   [
     {:phoenix, "~> 1.6.0"},
-    {:dart_sass, "~> 0.4", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.5", runtime: Mix.env() == :dev}
   ]
 end
 ```
