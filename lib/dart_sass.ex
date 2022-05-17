@@ -120,16 +120,16 @@ defmodule DartSass do
   preceeded by the path to the Dart VM executable.
   """
   def bin_path do
-    platform = platform()
-
     cond do
       env_path = Application.get_env(:dart_sass, :path) ->
         List.wrap(env_path)
 
       Code.ensure_loaded?(Mix.Project) ->
+        platform = platform()
         bin_path(platform, Path.dirname(Mix.Project.build_path()))
 
       true ->
+        platform = platform()
         bin_path(platform, "_build")
     end
   end
