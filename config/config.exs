@@ -1,7 +1,7 @@
 import Config
 
 config :dart_sass,
-  version: "1.49.11",
+  version: "1.54.5",
   another: [
     args: ["--version"]
   ]

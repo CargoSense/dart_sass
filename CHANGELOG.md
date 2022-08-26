@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Update Sass version to `1.54.5`
 - Skip platform check when given a custom path (h/t @jgelens)
 - Use only TLS 1.2 on OTP versions less than 25.
 
