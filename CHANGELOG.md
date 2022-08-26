@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.5.1 (2022-08-26)
 
 - Update Sass version to `1.54.5`
 - Skip platform check when given a custom path (h/t @jgelens)
