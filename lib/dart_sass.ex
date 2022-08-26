@@ -367,7 +367,8 @@ defmodule DartSass do
         depth: 2,
         customize_hostname_check: [
           match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-        ]
+        ],
+        versions: protocol_versions()
       ]
     ]
 
@@ -387,6 +388,18 @@ defmodule DartSass do
       other ->
         raise "couldn't fetch #{url}: #{inspect(other)}"
     end
+  end
+
+  defp protocol_versions do
+    if otp_version() < 25 do
+      [:"tlsv1.2"]
+    else
+      [:"tlsv1.2", :"tlsv1.3"]
+    end
+  end
+
+  defp otp_version do
+    :erlang.system_info(:otp_release) |> List.to_integer()
   end
 
   defp cacertfile() do

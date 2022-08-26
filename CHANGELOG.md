@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- Use only TLS 1.2 on OTP versions less than 25.
+
 ## v0.5.0 (2022-04-28)
 
 - Support upstream arm64 binaries
