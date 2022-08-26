@@ -143,19 +143,31 @@ alias for deployments, which will also use the `--style=compressed` option:
 
 ### Compatibility with Alpine Linux (`mix sass default` exited with 2)
 
+> Note: Using [glibc on Alpine Linux](https://ariadne.space/2021/08/26/there-is-no-such-thing-as-a-glibc-based-alpine-image/) is **not recommended**. Proceed at your own risk.
+
 Dart-native executables rely on [glibc](https://www.gnu.org/software/libc/) to be present. Because Alpine Linux uses [musl](https://musl.libc.org/) instead, you have to add the package [alpine-pkg-glibc](https://github.com/sgerrand/alpine-pkg-glibc) to your installation. Follow the installation guide in the README.
 
-Example for Docker (has to be added before running `mix sass`):
+For example, add the following to your Dockerfile before you
+run `mix sass`:
 
 ```Dockerfile
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
-RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk
-RUN apk add glibc-2.34-r0.apk
+ENV GLIBC_VERSION=2.34-r0
+RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+    wget -q -O /tmp/glibc.apk https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk && \
+    apk add /tmp/glibc.apk && \
+    rm -rf /tmp/glibc.apk
 ```
 
 In case you get the error `../../runtime/bin/eventhandler_linux.cc: 412: error: Failed to start event handler thread 1`, it means that your Docker installation or the used Docker-in-Docker image, is using a version below Docker 20.10.6. This error is related to an [updated version of the musl library](https://about.gitlab.com/blog/2021/08/26/its-time-to-upgrade-docker-engine). It can be resolved by using the [alpine-pkg-glibc](https://github.com/sgerrand/alpine-pkg-glibc) with the version 2.33 instead of 2.34.
 
 Notes: The Alpine package gcompat vs libc6-compat will not work.
+
+### Watchers and Bash
+
+In order to ensure graceful termination of the `sass` process
+when stdin closes, when the`--watch` option is given then the
+sass process will be invoked by a bash script that will
+handle the cleanup.
 
 ## Acknowledgements
 
