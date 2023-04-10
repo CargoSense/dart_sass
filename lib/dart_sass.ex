@@ -87,9 +87,7 @@ defmodule DartSass do
 
   @doc false
   # Latest known version at the time of publishing.
-  def latest_version do
-    "1.54.5"
-  end
+  def latest_version, do: "1.61.0"
 
   @doc """
   Returns the configured Sass version.
