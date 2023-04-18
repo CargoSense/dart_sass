@@ -48,6 +48,7 @@ defmodule DartSass do
 
       config :dart_sass, path: System.get_env("MIX_SASS_PATH")
 
+  Note that overriding `:path` disables version checking.
   """
 
   use Application
@@ -55,28 +56,30 @@ defmodule DartSass do
 
   @doc false
   def start(_, _) do
-    unless Application.get_env(:dart_sass, :version) do
-      Logger.warn("""
-      dart_sass version is not configured. Please set it in your config files:
-
-          config :dart_sass, :version, "#{latest_version()}"
-      """)
-    end
-
-    configured_version = configured_version()
-
-    case bin_version() do
-      {:ok, ^configured_version} ->
-        :ok
-
-      {:ok, version} ->
+    unless Application.get_env(:dart_sass, :path) do
+      unless Application.get_env(:dart_sass, :version) do
         Logger.warn("""
-        Outdated dart-sass version. Expected #{configured_version}, got #{version}. \
-        Please run `mix sass.install` or update the version in your config files.\
-        """)
+        dart_sass version is not configured. Please set it in your config files:
 
-      :error ->
-        :ok
+            config :dart_sass, :version, "#{latest_version()}"
+        """)
+      end
+
+      configured_version = configured_version()
+
+      case bin_version() do
+        {:ok, ^configured_version} ->
+          :ok
+
+        {:ok, version} ->
+          Logger.warn("""
+          Outdated dart-sass version. Expected #{configured_version}, got #{version}. \
+          Please run `mix sass.install` or update the version in your config files.\
+          """)
+
+        :error ->
+          :ok
+      end
     end
 
     Supervisor.start_link([], strategy: :one_for_one)

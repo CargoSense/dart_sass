@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.6.0
+
+- Overriding `:path` disables version checking.
+
 ## v0.5.1 (2022-08-26)
 
 - Update Sass version to `1.54.5`
