@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.7.0
+
+- Update Sass version to `1.61.0`
+
 ## v0.6.0
 
 - Overriding `:path` disables version checking.

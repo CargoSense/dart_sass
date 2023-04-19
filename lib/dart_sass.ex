@@ -87,9 +87,7 @@ defmodule DartSass do
 
   @doc false
   # Latest known version at the time of publishing.
-  def latest_version do
-    "1.54.5"
-  end
+  def latest_version, do: "1.61.0"
 
   @doc """
   Returns the configured Sass version.
@@ -116,24 +114,24 @@ defmodule DartSass do
       """
   end
 
-  @doc """
-  Returns the path to the `sass` executable.
+  defp dest_bin_paths(platform, base_path) do
+    target = target(platform)
+    ["dart", "sass.snapshot"] |> Enum.map(&Path.join(base_path, "#{&1}-#{target}"))
+  end
 
-  Depending on your system target architecture, the path may be
-  preceeded by the path to the Dart VM executable.
+  @doc """
+  Returns the path to the `dart` VM executable and to the `sass` executable.
   """
-  def bin_path do
+  def bin_paths do
     cond do
       env_path = Application.get_env(:dart_sass, :path) ->
         List.wrap(env_path)
 
       Code.ensure_loaded?(Mix.Project) ->
-        platform = platform()
-        bin_path(platform, Path.dirname(Mix.Project.build_path()))
+        dest_bin_paths(platform(), Path.dirname(Mix.Project.build_path()))
 
       true ->
-        platform = platform()
-        bin_path(platform, "_build")
+        dest_bin_paths(platform(), "_build")
     end
   end
 
@@ -150,23 +148,17 @@ defmodule DartSass do
   is not available.
   """
   def bin_version do
-    path = bin_path()
-
-    with true <- path_exists?(path),
-         {result, 0} <- cmd(path, ["--version"]) do
+    with paths = bin_paths(),
+         true <- paths_exist?(paths),
+         {result, 0} <- run_cmd(paths, ["--version"]) do
       {:ok, String.trim(result)}
     else
       _ -> :error
     end
   end
 
-  defp cmd(path, args) do
-    cmd(path, args, [])
-  end
-
-  defp cmd([command | args], extra_args, opts) do
-    System.cmd(command, args ++ extra_args, opts)
-  end
+  defp run_cmd([command_path | bin_paths], extra_args, opts \\ []),
+    do: System.cmd(command_path, bin_paths ++ extra_args, opts)
 
   @doc """
   Runs the given command with `args`.
@@ -187,20 +179,15 @@ defmodule DartSass do
     ]
 
     args = config_args ++ extra_args
-    path = bin_path()
 
     # TODO: Remove when dart-sass will exit when stdin is closed.
     # Link: https://github.com/sass/dart-sass/pull/1411
-    path =
-      if "--watch" in args and platform() != :windows do
-        [script_path() | path]
-      else
-        path
-      end
+    paths =
+      if "--watch" in args and platform() != :windows,
+        do: [script_path() | bin_paths()],
+        else: bin_paths()
 
-    path
-    |> cmd(args, opts)
-    |> elem(1)
+    run_cmd(paths, args, opts) |> elem(1)
   end
 
   @doc """
@@ -209,10 +196,7 @@ defmodule DartSass do
   Returns the same as `run/2`.
   """
   def install_and_run(profile, args) do
-    unless path_exists?(bin_path()) do
-      install()
-    end
-
+    paths_exist?(bin_paths()) || install()
     run(profile, args)
   end
 
@@ -229,6 +213,11 @@ defmodule DartSass do
         raise "could not install sass. Set MIX_XDG=1 and then set XDG_CACHE_HOME to the path you want to use as cache"
 
     platform = platform()
+
+    (platform == :linux and Version.match?(version, "> 1.57.1")) or
+      raise "versions 1.57.1 and lower are not supported anymore on Linux " <>
+              "due to changes to the package structure"
+
     name = "dart-sass-#{version}-#{target_extname(platform)}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
     archive = fetch_body!(url)
@@ -238,43 +227,15 @@ defmodule DartSass do
       other -> raise "couldn't unpack archive: #{inspect(other)}"
     end
 
-    path = bin_path()
+    [dart, snapshot] = bin_paths()
 
-    case platform do
-      :linux ->
-        [sass | _] = path
-        File.rm(sass)
-        File.cp!(Path.join([tmp_dir, "dart-sass", "sass"]), sass)
+    bin_suffix = if platform == :windows, do: ".exe", else: ""
 
-      :macos ->
-        [dart, snapshot | _] = path
-        File.rm(dart)
-        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart"]), dart)
-        File.rm(snapshot)
-        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
-
-      :windows ->
-        [dart, snapshot | _] = path
-        File.rm(dart)
-        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "dart.exe"]), dart)
-        File.rm(snapshot)
-        File.cp!(Path.join([tmp_dir, "dart-sass", "src", "sass.snapshot"]), snapshot)
-    end
-  end
-
-  defp bin_path(platform, base_path) do
-    target = target(platform)
-
-    case platform do
-      :linux ->
-        [Path.join(base_path, "sass-#{target}")]
-
-      _ ->
-        [
-          Path.join(base_path, "dart-#{target}"),
-          Path.join(base_path, "sass.snapshot-#{target}")
-        ]
-    end
+    [{"dart#{bin_suffix}", dart}, {"sass.snapshot", snapshot}]
+    |> Enum.each(fn {src_name, dest_path} ->
+      File.rm(dest_path)
+      File.cp!(Path.join([tmp_dir, "dart-sass", "src", src_name]), dest_path)
+    end)
   end
 
   defp platform do
@@ -286,8 +247,8 @@ defmodule DartSass do
     end
   end
 
-  defp path_exists?(path) do
-    Enum.all?(path, &File.exists?/1)
+  defp paths_exist?(paths) do
+    paths |> Enum.all?(&File.exists?/1)
   end
 
   defp freshdir_p(path) do
