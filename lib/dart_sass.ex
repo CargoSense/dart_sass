@@ -148,17 +148,19 @@ defmodule DartSass do
   is not available.
   """
   def bin_version do
-    with paths = bin_paths(),
-         true <- paths_exist?(paths),
-         {result, 0} <- run_cmd(paths, ["--version"]) do
+    paths = bin_paths()
+
+    with true <- paths_exist?(paths),
+         {result, 0} <- cmd(paths, ["--version"]) do
       {:ok, String.trim(result)}
     else
       _ -> :error
     end
   end
 
-  defp run_cmd([command_path | bin_paths], extra_args, opts \\ []),
-    do: System.cmd(command_path, bin_paths ++ extra_args, opts)
+  defp cmd([command_path | bin_paths], extra_args, opts \\ []) do
+    System.cmd(command_path, bin_paths ++ extra_args, opts)
+  end
 
   @doc """
   Runs the given command with `args`.
@@ -187,7 +189,9 @@ defmodule DartSass do
         do: [script_path() | bin_paths()],
         else: bin_paths()
 
-    run_cmd(paths, args, opts) |> elem(1)
+    paths
+    |> cmd(args, opts)
+    |> elem(1)
   end
 
   @doc """
@@ -196,7 +200,10 @@ defmodule DartSass do
   Returns the same as `run/2`.
   """
   def install_and_run(profile, args) do
-    paths_exist?(bin_paths()) || install()
+    unless paths_exist?(bin_paths()) do
+      install()
+    end
+
     run(profile, args)
   end
 
@@ -204,19 +211,19 @@ defmodule DartSass do
   Installs dart-sass with `configured_version/0`.
   """
   def install do
+    platform = platform()
     version = configured_version()
+
+    if platform == :linux and Version.match?(version, "< 1.58.0") do
+      raise "Installing dart_sass on Linux platforms requires version >= 1.58.0"
+    end
+
     tmp_opts = if System.get_env("MIX_XDG"), do: %{os: :linux}, else: %{}
 
     tmp_dir =
       freshdir_p(:filename.basedir(:user_cache, "cs-sass", tmp_opts)) ||
         freshdir_p(Path.join(System.tmp_dir!(), "cs-sass")) ||
         raise "could not install sass. Set MIX_XDG=1 and then set XDG_CACHE_HOME to the path you want to use as cache"
-
-    platform = platform()
-
-    (platform == :linux and Version.match?(version, "> 1.57.1")) or
-      raise "versions 1.57.1 and lower are not supported anymore on Linux " <>
-              "due to changes to the package structure"
 
     name = "dart-sass-#{version}-#{target_extname(platform)}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
@@ -231,11 +238,10 @@ defmodule DartSass do
 
     bin_suffix = if platform == :windows, do: ".exe", else: ""
 
-    [{"dart#{bin_suffix}", dart}, {"sass.snapshot", snapshot}]
-    |> Enum.each(fn {src_name, dest_path} ->
+    for {src_name, dest_path} <- [{"dart#{bin_suffix}", dart}, {"sass.snapshot", snapshot}] do
       File.rm(dest_path)
       File.cp!(Path.join([tmp_dir, "dart-sass", "src", src_name]), dest_path)
-    end)
+    end
   end
 
   defp platform do
@@ -248,7 +254,7 @@ defmodule DartSass do
   end
 
   defp paths_exist?(paths) do
-    paths |> Enum.all?(&File.exists?/1)
+    Enum.all?(paths, &File.exists?/1)
   end
 
   defp freshdir_p(path) do
