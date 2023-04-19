@@ -215,7 +215,7 @@ defmodule DartSass do
     version = configured_version()
 
     if platform == :linux and Version.match?(version, "< 1.58.0") do
-      raise "Installing dart_sass on Linux platforms requires version >= 1.58.0"
+      raise "Installing dart_sass on Linux platforms requires version >= 1.58.0, got: #{inspect(version)}"
     end
 
     tmp_opts = if System.get_env("MIX_XDG"), do: %{os: :linux}, else: %{}
@@ -244,7 +244,8 @@ defmodule DartSass do
     end
   end
 
-  defp platform do
+  @doc false
+  def platform do
     case :os.type() do
       {:unix, :darwin} -> :macos
       {:unix, :linux} -> :linux

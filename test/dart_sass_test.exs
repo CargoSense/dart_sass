@@ -41,6 +41,17 @@ defmodule DartSassTest do
                  end
   end
 
+  @tag platform: :linux
+  test "errors on older Linux package version" do
+    Application.put_env(:dart_sass, :version, "1.57.1")
+
+    assert_raise RuntimeError, ~r/requires version >= 1.58.0, got: "1.57.1"/, fn ->
+      Mix.Task.rerun("sass.install", ["--if-missing"])
+    end
+
+    Application.delete_env(:dart_sass, :version)
+  end
+
   @tag :tmp_dir
   test "compiles", %{tmp_dir: dir} do
     dest = Path.join(dir, "app.css")
