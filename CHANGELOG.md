@@ -5,7 +5,7 @@
 **Potentially breaking change:** Due to a change in the upstream package structure, you must specify a `:version` >= 1.58.0 on Linux platforms.
 
 - Updates Sass version to `1.61.0`.
-- Renames `DartSass.bin_path/0` to `DartSass.bin_paths/0`.
+- Renames DartSass.bin_path/0 to `DartSass.bin_paths/0`.
 - Supports installation of newer upstream packages on Linux platforms. (h/t @azizk)
 - Overriding `:path` disables version checking.
 - Explicitly depends on `inets` and `ssl`. (h/t @josevalim)

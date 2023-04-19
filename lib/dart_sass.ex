@@ -1,6 +1,6 @@
 defmodule DartSass do
   @moduledoc """
-  DartSass is a installer and runner for [Sass](https://sass-lang.com/dart-sass).
+  DartSass is a installer and runner for [Sass](https://sass-lang.com/guide).
 
   ## Profiles
 
@@ -9,7 +9,7 @@ defmodule DartSass do
   directory and environment:
 
       config :dart_sass,
-        version: "1.54.5",
+        version: "1.61.0",
         default: [
           args: ~w(css/app.scss ../priv/static/assets/app.css),
           cd: Path.expand("../assets", __DIR__)
@@ -142,7 +142,7 @@ defmodule DartSass do
   end
 
   @doc """
-  Returns the version of the Sass executable (or snapshot).
+  Returns the version of the Sass executable.
 
   Returns `{:ok, version_string}` on success or `:error` when the executable
   is not available.
@@ -208,7 +208,7 @@ defmodule DartSass do
   end
 
   @doc """
-  Installs dart-sass with `configured_version/0`.
+  Installs Sass with `configured_version/0`.
   """
   def install do
     platform = platform()
