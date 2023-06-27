@@ -58,7 +58,7 @@ defmodule DartSass do
   def start(_, _) do
     unless Application.get_env(:dart_sass, :path) do
       unless Application.get_env(:dart_sass, :version) do
-        Logger.warn("""
+        Logger.warning("""
         dart_sass version is not configured. Please set it in your config files:
 
             config :dart_sass, :version, "#{latest_version()}"
@@ -72,7 +72,7 @@ defmodule DartSass do
           :ok
 
         {:ok, version} ->
-          Logger.warn("""
+          Logger.warning("""
           Outdated dart-sass version. Expected #{configured_version}, got #{version}. \
           Please run `mix sass.install` or update the version in your config files.\
           """)
