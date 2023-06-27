@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## v0.6.0
+## v0.7.0
+
+  * Require Elixir v1.11+
+  * Mark inets and ssl as optional apps
+
+## v0.6.0 (2023-04-19)
 
 **Potentially breaking change:** Due to a change in the upstream package structure, you must specify a `:version` >= 1.58.0 on Linux platforms.
 

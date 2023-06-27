@@ -1,14 +1,14 @@
 defmodule DartSass.MixProject do
   use Mix.Project
 
-  @version "0.6.0"
+  @version "0.7.0"
   @source_url "https://github.com/CargoSense/dart_sass"
 
   def project do
     [
       app: :dart_sass,
       version: @version,
-      elixir: "~> 1.10",
+      elixir: "~> 1.11",
       deps: deps(),
       description: "Mix tasks for installing and invoking sass",
       package: [
@@ -30,7 +30,7 @@ defmodule DartSass.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :inets, :ssl],
+      extra_applications: [:logger, inets: :optional, ssl: :optional],
       mod: {DartSass, []},
       env: [default: []]
     ]
