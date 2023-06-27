@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.7.0
+## v0.7.0 (2023-06-27)
 
   * Require Elixir v1.11+
   * Mark inets and ssl as optional apps

@@ -1,7 +1,7 @@
 defmodule DartSass.MixProject do
   use Mix.Project
 
-  @version "0.7.0-dev"
+  @version "0.7.0"
   @source_url "https://github.com/CargoSense/dart_sass"
 
   def project do
