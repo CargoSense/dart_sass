@@ -36,10 +36,6 @@ defmodule Mix.Tasks.Sass.Install do
         if opts[:if_missing] && latest_version?() do
           :ok
         else
-          if Code.ensure_loaded?(Mix.Tasks.App.Config) do
-            Mix.Task.run("app.config")
-          end
-
           DartSass.install()
         end
 

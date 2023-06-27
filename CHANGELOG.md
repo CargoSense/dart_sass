@@ -4,6 +4,7 @@
 
   * Require Elixir v1.11+
   * Mark inets and ssl as optional apps
+  * Ensure the install task only loads the runtime config with `--runtime-config`
 
 ## v0.6.0 (2023-04-19)
 
