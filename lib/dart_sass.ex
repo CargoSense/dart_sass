@@ -345,7 +345,7 @@ defmodule DartSass do
 
     case :httpc.request(:get, {url, []}, http_options, []) do
       {:ok, {{_, 302, _}, headers, _}} ->
-        {'location', download} = List.keyfind(headers, 'location', 0)
+        {~c"location", download} = List.keyfind(headers, ~c"location", 0)
         options = [body_format: :binary]
 
         case :httpc.request(:get, {download, []}, http_options, options) do
