@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.7.1 (2024-07-29)
+
+  * Update references to Dart Sass version to use latest `1.77.8` release
+  * Update README to reflect minor version increase to `~> 0.7`, Dart Sass to `1.77.8`, edge Phoenix to `~> 1.7.14`
+  * Fix Warning for elixir 1.17
+
 ## v0.7.0 (2023-06-27)
 
   * Require Elixir v1.11+
