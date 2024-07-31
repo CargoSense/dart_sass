@@ -9,7 +9,7 @@ defmodule DartSass do
   directory and environment:
 
       config :dart_sass,
-        version: "1.61.0",
+        version: "1.77.8",
         default: [
           args: ~w(css/app.scss ../priv/static/assets/app.css),
           cd: Path.expand("../assets", __DIR__)
@@ -87,7 +87,7 @@ defmodule DartSass do
 
   @doc false
   # Latest known version at the time of publishing.
-  def latest_version, do: "1.61.0"
+  def latest_version, do: "1.77.8"
 
   @doc """
   Returns the configured Sass version.

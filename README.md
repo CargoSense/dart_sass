@@ -13,7 +13,7 @@ in dev:
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.6", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev}
   ]
 end
 ```
@@ -24,7 +24,7 @@ then it only needs to be a dev dependency:
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.6", only: :dev}
+    {:dart_sass, "~> 0.7", only: :dev}
   ]
 end
 ```
@@ -33,7 +33,7 @@ Once installed, change your `config/config.exs` to pick your
 dart_sass version of choice:
 
 ```elixir
-config :dart_sass, version: "1.61.0"
+config :dart_sass, version: "1.77.8"
 ```
 
 Now you can install dart-sass by running:
@@ -68,7 +68,7 @@ directory, the OS environment, and default arguments to the
 
 ```elixir
 config :dart_sass,
-  version: "1.61.0",
+  version: "1.77.8",
   default: [
     args: ~w(css/app.scss ../priv/static/assets/app.css),
     cd: Path.expand("../assets", __DIR__)
@@ -89,8 +89,8 @@ First add it as a dependency in your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:phoenix, "~> 1.6.0"},
-    {:dart_sass, "~> 0.5", runtime: Mix.env() == :dev}
+    {:phoenix, "~> 1.7.14"},
+    {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev}
   ]
 end
 ```
@@ -100,7 +100,7 @@ compile CSS to the output location `priv/static/assets/app.css`:
 
 ```elixir
 config :dart_sass,
-  version: "1.61.0",
+  version: "1.77.8",
   default: [
     args: ~w(css/app.scss ../priv/static/assets/app.css),
     cd: Path.expand("../assets", __DIR__)
