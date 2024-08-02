@@ -1,6 +1,6 @@
 # DartSass
 
-[![CI](https://github.com/CargoSense/dart_sass/actions/workflows/main.yml/badge.svg)](https://github.com/CargoSense/dart_sass/actions/workflows/main.yml)
+[![CI](https://github.com/CargoSense/dart_sass/actions/workflows/ci.yml/badge.svg)](https://github.com/CargoSense/dart_sass/actions/workflows/ci.yml)
 
 Mix tasks for installing and invoking [sass](https://github.com/sass/dart-sass/).
 
