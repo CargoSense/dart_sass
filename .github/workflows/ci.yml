@@ -9,48 +9,29 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     env:
       MIX_ENV: test
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
         include:
           - pair:
-              elixir: "1.11"
-              otp: 22
+              elixir: "1.13"
+              otp: "24.3.4.10"
           - pair:
-              elixir: "1.14"
-              otp: 25
-            lint: lint
+              elixir: "1.17"
+              otp: "27.0.1"
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: erlef/setup-beam@v1
+      - uses: actions/checkout@v4
+      - uses: CargoSense/setup-elixir-project@v1
         with:
-          otp-version: ${{matrix.pair.otp}}
-          elixir-version: ${{matrix.pair.elixir}}
-
-      - uses: actions/cache@v3
-        with:
-          path: deps
-          key: ${{ runner.os }}-mix-${{matrix.pair.elixir}}-${{matrix.pair.otp}}-${{ hashFiles('**/mix.lock') }}-v1
-
-      - run: mix deps.get
-
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+          build-flags: "--warnings-as-errors"
       - run: mix format --check-formatted
-        if: ${{ matrix.lint }}
-
-      - run: mix deps.unlock --check-unused
-        if: ${{ matrix.lint }}
-
-      - run: mix deps.compile
-
-      - run: mix compile --warnings-as-errors
-        if: ${{ matrix.lint }}
-
       - run: mix test
-        if: ${{ ! matrix.lint }}
-
-      - run: mix test --warnings-as-errors
-        if: ${{ matrix.lint }}
