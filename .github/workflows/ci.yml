@@ -7,25 +7,46 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  MIX_ENV: test
+
 jobs:
-  test:
-    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    env:
-      MIX_ENV: test
+  test_macos:
+    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (macOS)
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-        include:
-          - pair:
-              elixir: "1.13"
-              otp: "24.3.4.10"
-          - pair:
-              elixir: "1.17"
-              otp: "27.0.1"
+        pair:
+          - elixir: "1.13"
+            otp: "24.3.4.10"
+          - elixir: "1.17"
+            otp: "27.0.1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate .tool-versions file
+        run: |
+          echo "elixir ${{ matrix.pair.elixir }}" >> .tool-versions
+          echo "erlang ${{ matrix.pair.otp }}" >> .tool-versions
+          cat .tool-versions
+      - uses: asdf-vm/actions/install@v3
+      - name: Install Hex package manager
+        run: mix local.hex --force
+      - name: Install dependencies
+        run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix test
+  test_ubuntu:
+    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (Ubuntu)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pair:
+          - elixir: "1.13"
+            otp: "24.3.4.10"
+          - elixir: "1.17"
+            otp: "27.0.1"
     steps:
       - uses: actions/checkout@v4
       - uses: CargoSense/setup-elixir-project@v1
