@@ -42,17 +42,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pair:
-          - elixir: "1.13"
-            otp: "24.3.4.10"
-          - elixir: "1.17"
-            otp: "27.0.1"
+        include:
+          - pair:
+              elixir: "1.13"
+              otp: "24.3.4.10"
+          - pair:
+              elixir: "1.17"
+              otp: "27.0.1"
+            lint: lint
     steps:
       - uses: actions/checkout@v4
-      - uses: CargoSense/setup-elixir-project@v1
+      - uses: erlef/setup-beam@main
         with:
           otp-version: ${{ matrix.pair.otp }}
           elixir-version: ${{ matrix.pair.elixir }}
-          build-flags: "--warnings-as-errors"
+          version-type: strict
+      - uses: actions/cache@v4
+        with:
+          path: deps
+          key: mix-deps-${{ hashFiles('**/mix.lock') }}
+      - run: mix deps.get --check-locked
       - run: mix format --check-formatted
+        if: ${{ matrix.lint }}
+      - run: mix deps.unlock --check-unused
+        if: ${{ matrix.lint }}
+      - run: mix deps.compile
+      - run: mix compile --warnings-as-errors
+        if: ${{ matrix.lint }}
       - run: mix test
+        if: ${{ ! matrix.lint }}
+      - run: mix test --warnings-as-errors
+        if: ${{ matrix.lint }}
