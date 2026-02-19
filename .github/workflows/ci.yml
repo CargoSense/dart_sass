@@ -23,7 +23,7 @@ jobs:
           - elixir: "1.17"
             otp: "27.0.1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Generate .tool-versions file
         run: |
           echo "elixir ${{ matrix.pair.elixir }}" >> .tool-versions
@@ -50,7 +50,7 @@ jobs:
               otp: "27.0.1"
             lint: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: erlef/setup-beam@main
         with:
           otp-version: ${{ matrix.pair.otp }}
