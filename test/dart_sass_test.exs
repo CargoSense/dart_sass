@@ -16,13 +16,13 @@ defmodule DartSassTest do
   end
 
   test "updates on install" do
-    Application.put_env(:dart_sass, :version, "1.58.0")
+    Application.put_env(:dart_sass, :version, "1.74.1")
 
     Mix.Task.rerun("sass.install", ["--if-missing"])
 
     assert ExUnit.CaptureIO.capture_io(fn ->
              assert DartSass.run(:default, ["--version"]) == 0
-           end) =~ "1.58.0"
+           end) =~ "1.74.1"
 
     Application.delete_env(:dart_sass, :version)
 
@@ -41,11 +41,10 @@ defmodule DartSassTest do
                  end
   end
 
-  @tag platform: :linux
-  test "errors on older Linux package version" do
-    Application.put_env(:dart_sass, :version, "1.57.1")
+  test "errors on older package version" do
+    Application.put_env(:dart_sass, :version, "1.72.0")
 
-    assert_raise RuntimeError, ~r/requires version >= 1.58.0, got: "1.57.1"/, fn ->
+    assert_raise RuntimeError, ~r/requires version >= 1.74.1, got: "1.72.0"/, fn ->
       Mix.Task.rerun("sass.install", ["--if-missing"])
     end
 

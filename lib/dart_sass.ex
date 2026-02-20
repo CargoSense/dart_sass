@@ -9,7 +9,7 @@ defmodule DartSass do
   directory and environment:
 
       config :dart_sass,
-        version: "1.77.8",
+        version: "1.97.3",
         default: [
           args: ~w(css/app.scss ../priv/static/assets/app.css),
           cd: Path.expand("../assets", __DIR__)
@@ -87,7 +87,7 @@ defmodule DartSass do
 
   @doc false
   # Latest known version at the time of publishing.
-  def latest_version, do: "1.77.8"
+  def latest_version, do: "1.97.3"
 
   @doc """
   Returns the configured Sass version.
@@ -114,8 +114,8 @@ defmodule DartSass do
       """
   end
 
-  defp dest_bin_paths(platform, base_path) do
-    target = target(platform)
+  defp dest_bin_paths(base_path) do
+    target = target()
     ["dart", "sass.snapshot"] |> Enum.map(&Path.join(base_path, "#{&1}-#{target}"))
   end
 
@@ -128,10 +128,10 @@ defmodule DartSass do
         List.wrap(env_path)
 
       Code.ensure_loaded?(Mix.Project) ->
-        dest_bin_paths(platform(), Path.dirname(Mix.Project.build_path()))
+        dest_bin_paths(Path.dirname(Mix.Project.build_path()))
 
       true ->
-        dest_bin_paths(platform(), "_build")
+        dest_bin_paths("_build")
     end
   end
 
@@ -185,7 +185,7 @@ defmodule DartSass do
     # TODO: Remove when dart-sass will exit when stdin is closed.
     # Link: https://github.com/sass/dart-sass/pull/1411
     paths =
-      if "--watch" in args and platform() != :windows,
+      if "--watch" in args and not windows?(),
         do: [script_path() | bin_paths()],
         else: bin_paths()
 
@@ -193,6 +193,8 @@ defmodule DartSass do
     |> cmd(args, opts)
     |> elem(1)
   end
+
+  defp windows?, do: elem(:os.type(), 0) == :win32
 
   @doc """
   Installs, if not available, and then runs `sass`.
@@ -211,11 +213,12 @@ defmodule DartSass do
   Installs Sass with `configured_version/0`.
   """
   def install do
-    platform = platform()
+    target = target()
     version = configured_version()
 
-    if platform == :linux and Version.match?(version, "< 1.58.0") do
-      raise "Installing dart_sass on Linux platforms requires version >= 1.58.0, got: #{inspect(version)}"
+    # Release name changes stabilized on v1.74.1, so we require at least that version.
+    if Version.match?(version, "< 1.74.1") do
+      raise "Installing dart_sass on requires version >= 1.74.1, got: #{inspect(version)}"
     end
 
     tmp_opts = if System.get_env("MIX_XDG"), do: %{os: :linux}, else: %{}
@@ -225,7 +228,8 @@ defmodule DartSass do
         freshdir_p(Path.join(System.tmp_dir!(), "cs-sass")) ||
         raise "could not install sass. Set MIX_XDG=1 and then set XDG_CACHE_HOME to the path you want to use as cache"
 
-    name = "dart-sass-#{version}-#{target_extname(platform)}"
+    extname = if windows?(), do: "zip", else: "tar.gz"
+    name = "dart-sass-#{version}-#{target}.#{extname}"
     url = "https://github.com/sass/dart-sass/releases/download/#{version}/#{name}"
     archive = fetch_body!(url)
 
@@ -236,21 +240,11 @@ defmodule DartSass do
 
     [dart, snapshot] = bin_paths()
 
-    bin_suffix = if platform == :windows, do: ".exe", else: ""
+    bin_suffix = if windows?(), do: ".exe", else: ""
 
     for {src_name, dest_path} <- [{"dart#{bin_suffix}", dart}, {"sass.snapshot", snapshot}] do
       File.rm(dest_path)
       File.cp!(Path.join([tmp_dir, "dart-sass", "src", src_name]), dest_path)
-    end
-  end
-
-  @doc false
-  def platform do
-    case :os.type() do
-      {:unix, :darwin} -> :macos
-      {:unix, :linux} -> :linux
-      {:unix, osname} -> raise "dart_sass is not available for osname: #{inspect(osname)}"
-      {:win32, _} -> :windows
     end
   end
 
@@ -275,38 +269,63 @@ defmodule DartSass do
     :erl_tar.extract({:binary, tar}, [:compressed, cwd: to_charlist(cwd)])
   end
 
-  defp target_extname(platform) do
-    target = target(platform)
-
-    case platform do
-      :windows -> "#{target}.zip"
-      _ -> "#{target}.tar.gz"
-    end
-  end
-
   # Available targets: https://github.com/sass/dart-sass/releases
-  defp target(:windows) do
-    case :erlang.system_info(:wordsize) * 8 do
-      32 -> "windows-ia32"
-      64 -> "windows-x64"
-    end
-  end
-
-  defp target(platform) do
+  # * android-arm
+  # * android-arm64
+  # * android-riscv64
+  # * android-x64
+  # * linux-arm-musl
+  # * linux-arm
+  # * linux-arm64-musl
+  # * linux-arm64
+  # * linux-riscv64-musl
+  # * linux-riscv64
+  # * linux-x64-musl
+  # * linux-x64
+  # * macos-arm64
+  # * macos-x64
+  # * windows-arm64
+  # * windows-x64
+  defp target do
     arch_str = :erlang.system_info(:system_architecture)
-    [arch | _] = arch_str |> List.to_string() |> String.split("-")
+    target_triple = arch_str |> List.to_string() |> String.split("-")
 
-    # TODO: remove "arm" when we require OTP 24
-    case arch do
-      "amd64" -> "#{platform}-x64"
-      "aarch64" -> "#{platform}-arm64"
-      "arm" -> "#{platform}-arm64"
-      "x86_64" -> "#{platform}-x64"
-      "i686" -> "#{platform}-ia32"
-      "i386" -> "#{platform}-ia32"
-      _ -> raise "dart_sass not available for architecture: #{arch_str}"
+    {arch, abi} =
+      case target_triple do
+        [arch, _vendor, _system, abi] -> {arch, abi}
+        [arch, _vendor, abi] -> {arch, abi}
+        [arch | _] -> {arch, nil}
+      end
+
+    case {:os.type(), arch, abi, :erlang.system_info(:wordsize) * 8} do
+      {{:win32, _}, "aarch64", _abi, 64} ->
+        "windows-arm64"
+
+      {{:win32, _}, _arch, _abi, 64} ->
+        "windows-x64"
+
+      {{:unix, :darwin}, arch, _abi, 64} when arch in ~w(arm aarch64) ->
+        "macos-arm64"
+
+      {{:unix, :darwin}, "x86_64", _abi, 64} ->
+        "macos-x64"
+
+      {{:unix, _osname}, "aarch64", abi, 64} ->
+        "linux-arm64" <> maybe_add_abi_suffix(abi)
+
+      {{:unix, _osname}, "arm", abi, 32} ->
+        "linux-arm" <> maybe_add_abi_suffix(abi)
+
+      {{:unix, _osname}, arch, abi, 64} when arch in ~w(x86_64 amd64) ->
+        "linux-x64" <> maybe_add_abi_suffix(abi)
+
+      {_os, _arch, _abi, _wordsize} ->
+        raise "dart_sass is not available for architecture: #{arch_str}"
     end
   end
+
+  defp maybe_add_abi_suffix("musl"), do: "-musl"
+  defp maybe_add_abi_suffix(_), do: ""
 
   defp fetch_body!(url) do
     url = String.to_charlist(url)

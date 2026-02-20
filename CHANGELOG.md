@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.8.0-dev
+
+**Potentially breaking change:** Due to inconsistencies in upstream release names, you must specify a `:version` >= 1.74.1 on all platforms.
+
+  * Updates Sass version to [`1.97.3`](https://github.com/sass/dart-sass/releases/tag/1.97.3).
+  * Adds support for `-musl` package variants suitable for use on Alpine Linux.
+
 ## v0.7.1
 
   * Update references to Dart Sass version to use latest `1.77.8` release
