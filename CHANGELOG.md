@@ -4,8 +4,10 @@
 
 **Potentially breaking change:** Due to inconsistencies in upstream release names, you must specify a `:version` >= 1.74.1 on all platforms.
 
+  * Requires Elixir v1.14+, OTP 25+
   * Updates Sass version to [`1.97.3`](https://github.com/sass/dart-sass/releases/tag/1.97.3).
   * Adds support for `-musl` package variants suitable for use on Alpine Linux.
+  * Removes dependency on `:castore` in favor of using Erlang certificates.
 
 ## v0.7.1
 
