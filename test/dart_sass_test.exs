@@ -88,6 +88,7 @@ defmodule DartSassTest do
 
             assert return_code == 0
           end)
+          |> IO.puts()
         end)
       end)
       |> Task.await_many(:infinity)
