@@ -83,7 +83,7 @@ defmodule DartSassTest do
             # Let the first finished task set the binary files to read and execute only,
             # so that the others will fail if they try to overwrite them.
             for path <- bin_paths do
-              File.chmod(path, 0o500)
+              path |> File.chmod(0o500) |> dbg()
             end
 
             assert return_code == 0
@@ -92,9 +92,7 @@ defmodule DartSassTest do
       end)
       |> Task.await_many(:infinity)
 
-    # for path <- bin_paths do
-    #   path |> File.stat() |> dbg()
-    # end
+    for path <- bin_paths, do: path |> File.stat()
 
     for path <- bin_paths do
       File.chmod!(path, 0o700)
