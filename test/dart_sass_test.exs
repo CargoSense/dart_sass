@@ -61,7 +61,7 @@ defmodule DartSassTest do
   test "install_and_run/2 may be invoked concurrently" do
     bin_paths = DartSass.bin_paths()
 
-    for path <- bin_paths, do: path |> File.stat() |> dbg()
+    for path <- bin_paths, do: path |> File.stat()
 
     for path <- bin_paths do
       case File.rm(path) do
