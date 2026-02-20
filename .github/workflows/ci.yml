@@ -104,7 +104,7 @@ jobs:
               otp: "27.0"
     steps:
       - uses: actions/checkout@v6
-      - uses: erlef/setup-beam@v1
+      - uses: erlef/setup-beam@main
         with:
           otp-version: ${{ matrix.pair.otp }}
           elixir-version: ${{ matrix.pair.elixir }}
