@@ -72,16 +72,18 @@ jobs:
       - run: mix test --warnings-as-errors
         if: ${{ matrix.lint }}
   test_alpine:
-    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (Alpine)
+    name: Elixir ${{ matrix.group.elixir }} OTP ${{ matrix.group.otp }} (Alpine ${{ matrix.group.alpine }})
     runs-on: ubuntu-latest
-    container: hexpm/elixir:${{ matrix.pair.elixir }}-erlang-${{ matrix.pair.otp }}-alpine-3.23.3
+    container: hexpm/elixir:${{ matrix.group.elixir }}-erlang-${{ matrix.group.otp }}-alpine-${{ matrix.group.alpine }}
     strategy:
       matrix:
         include:
-          - pair:
+          - group:
+              alpine: "3.21.6"
               elixir: "1.14"
               otp: "25.0"
-          - pair:
+          - group:
+              alpine: "3.23.3"
               elixir: "1.18"
               otp: "27.0"
     steps:
