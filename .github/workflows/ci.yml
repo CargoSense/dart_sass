@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
+    branches: []
   workflow_dispatch:
 
 env:
@@ -72,3 +72,20 @@ jobs:
         if: ${{ ! matrix.lint }}
       - run: mix test --warnings-as-errors
         if: ${{ matrix.lint }}
+  test_alpine:
+    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (Alpine)
+    runs-on: ubuntu-latest
+    container: hexpm/elixir:${{ matrix.pair.elixir }}-erlang-${{ matrix.pair.otp }}-alpine-3.23.3
+    strategy:
+      matrix:
+        include:
+          - pair:
+              elixir: "1.18"
+              otp: "27.0"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Hex package manager
+        run: mix local.hex --force
+      - name: Install dependencies
+        run: mix deps.get
+      - run: mix test
