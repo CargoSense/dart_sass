@@ -84,11 +84,8 @@ jobs:
               otp: "27.0"
     steps:
       - uses: actions/checkout@v6
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{ matrix.pair.otp }}
-          elixir-version: ${{ matrix.pair.elixir }}
-          version-type: strict
+      - name: Install Hex package manager
+        run: mix local.hex --force
       - name: Install dependencies
         run: mix deps.get
       - run: mix test
