@@ -57,4 +57,43 @@ defmodule DartSassTest do
     Mix.Task.rerun("sass", ["default", "--no-source-map", "test/fixtures/app.scss", dest])
     assert File.read!(dest) == "body > p {\n  color: green;\n}\n"
   end
+
+  test "install_and_run/2 may be invoked concurrently" do
+    bin_paths = DartSass.bin_paths()
+
+    for path <- bin_paths do
+      case File.rm(path) do
+        :ok -> :ok
+        {:error, :enoent} -> :ok
+        {:error, reason} -> flunk("Could not delete #{inspect(path)}, reason: #{inspect(reason)}")
+      end
+    end
+
+    results =
+      [:extra1, :extra2, :extra3]
+      |> Enum.map(fn profile ->
+        Application.put_env(:dart_sass, profile, args: ["--version"])
+
+        Task.async(fn ->
+          ExUnit.CaptureIO.capture_io(fn ->
+            return_code = DartSass.install_and_run(profile, [])
+
+            # Let the first finished task set the binary files to read and execute only,
+            # so that the others will fail if they try to overwrite them.
+            for path <- bin_paths do
+              File.chmod(path, 0o500)
+            end
+
+            assert return_code == 0
+          end)
+        end)
+      end)
+      |> Task.await_many(:infinity)
+
+    for path <- bin_paths do
+      File.chmod!(path, 0o700)
+    end
+
+    assert Enum.all?(results)
+  end
 end
