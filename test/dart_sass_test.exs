@@ -91,6 +91,10 @@ defmodule DartSassTest do
       |> Task.await_many(:infinity)
 
     for path <- bin_paths do
+      path |> File.stat() |> dbg()
+    end
+
+    for path <- bin_paths do
       File.chmod!(path, 0o700)
     end
 
