@@ -61,12 +61,14 @@ defmodule DartSassTest do
   test "install_and_run/2 may be invoked concurrently" do
     bin_paths = DartSass.bin_paths()
 
-    # for path <- bin_paths do
-    #   path |> File.stat() |> dbg()
-    # end
+    for path <- bin_paths, do: path |> File.stat() |> dbg()
 
     for path <- bin_paths do
-      assert :ok = File.exists?(path) && File.rm!(path)
+      case File.rm(path) do
+        :ok -> :ok
+        {:error, :enoent} -> :ok
+        {:error, reason} -> flunk("Could not delete #{inspect(path)}, reason: #{inspect(reason)}")
+      end
     end
 
     results =
