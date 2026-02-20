@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         pair:
-          - elixir: "1.13"
-            otp: "24.3.4.10"
-          - elixir: "1.17"
-            otp: "27.0.1"
+          - elixir: "1.14"
+            otp: 25
+          - elixir: "1.18"
+            otp: 27
     steps:
       - uses: actions/checkout@v6
       - name: Generate .tool-versions file
@@ -43,15 +43,15 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: "1.13"
-              otp: "24.3.4.10"
+              elixir: "1.14"
+              otp: 25
           - pair:
-              elixir: "1.17"
-              otp: "27.0.1"
+              elixir: "1.18"
+              otp: 27
             lint: lint
     steps:
       - uses: actions/checkout@v6
-      - uses: erlef/setup-beam@main
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.pair.otp }}
           elixir-version: ${{ matrix.pair.elixir }}

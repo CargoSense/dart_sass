@@ -346,14 +346,12 @@ defmodule DartSass do
       :httpc.set_options([{:https_proxy, {{String.to_charlist(host), port}, []}}])
     end
 
-    # https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/inets
-    cacertfile = cacertfile() |> String.to_charlist()
-
     http_options = [
       autoredirect: false,
       ssl: [
         verify: :verify_peer,
-        cacertfile: cacertfile,
+        # https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/inets
+        cacerts: :public_key.cacerts_get(),
         depth: 2,
         customize_hostname_check: [
           match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
@@ -390,9 +388,5 @@ defmodule DartSass do
 
   defp otp_version do
     :erlang.system_info(:otp_release) |> List.to_integer()
-  end
-
-  defp cacertfile() do
-    Application.get_env(:dart_sass, :cacerts_path) || CAStore.file_path()
   end
 end
