@@ -107,6 +107,7 @@ jobs:
               otp: "27.0"
     steps:
       - uses: actions/checkout@v6
+      # Using `@main` is currently required for windows-2025 support.
       - uses: erlef/setup-beam@main
         with:
           otp-version: ${{ matrix.pair.otp }}
