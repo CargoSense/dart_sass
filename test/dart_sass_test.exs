@@ -61,9 +61,9 @@ defmodule DartSassTest do
   test "install_and_run/2 may be invoked concurrently" do
     bin_paths = DartSass.bin_paths()
 
-    for path <- bin_paths do
-      path |> File.stat() |> dbg()
-    end
+    # for path <- bin_paths do
+    #   path |> File.stat() |> dbg()
+    # end
 
     for path <- bin_paths do
       assert :ok = File.exists?(path) && File.rm!(path)
@@ -90,9 +90,9 @@ defmodule DartSassTest do
       end)
       |> Task.await_many(:infinity)
 
-    for path <- bin_paths do
-      path |> File.stat() |> dbg()
-    end
+    # for path <- bin_paths do
+    #   path |> File.stat() |> dbg()
+    # end
 
     for path <- bin_paths do
       File.chmod!(path, 0o700)
