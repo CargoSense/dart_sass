@@ -62,6 +62,10 @@ defmodule DartSassTest do
     bin_paths = DartSass.bin_paths()
 
     for path <- bin_paths do
+      File.stat(path) |> dbg()
+    end
+
+    for path <- bin_paths do
       assert :ok = File.exists?(path) && File.rm!(path)
     end
 
