@@ -81,12 +81,11 @@ defmodule DartSassTest do
             # Let the first finished task set the binary files to read and execute only,
             # so that the others will fail if they try to overwrite them.
             for path <- bin_paths do
-              ok_or_retry(fn -> File.chmod(path, 0o500) end) |> dbg()
+              ok_or_retry(fn -> File.chmod(path, 0o500) end)
             end
 
             assert return_code == 0
           end)
-          |> IO.puts()
         end)
       end)
       |> Task.await_many(:infinity)
@@ -101,6 +100,8 @@ defmodule DartSassTest do
     assert Enum.all?(results)
   end
 
+  # File operations are flaky for some Elixir versions on Windows. The `ok_or_retry/2` function
+  # provides a simplified way to retry an operation in a tight loop expecting an `:ok` result.
   defp ok_or_retry(func, times \\ 10)
        when is_function(func, 0) and
               (is_integer(times) and times > 0) do
