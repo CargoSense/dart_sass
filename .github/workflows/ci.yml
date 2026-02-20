@@ -19,9 +19,9 @@ jobs:
       matrix:
         pair:
           - elixir: "1.14"
-            otp: 25
+            otp: "25.0"
           - elixir: "1.18"
-            otp: 27
+            otp: "27.0"
     steps:
       - uses: actions/checkout@v6
       - name: Generate .tool-versions file
@@ -44,10 +44,10 @@ jobs:
         include:
           - pair:
               elixir: "1.14"
-              otp: 25
+              otp: "25.0"
           - pair:
               elixir: "1.18"
-              otp: 27
+              otp: "27.0"
             lint: lint
     steps:
       - uses: actions/checkout@v6
