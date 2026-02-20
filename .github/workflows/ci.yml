@@ -100,6 +100,9 @@ jobs:
       matrix:
         include:
           - pair:
+              elixir: "1.14"
+              otp: "25.0"
+          - pair:
               elixir: "1.18"
               otp: "27.0"
     steps:
