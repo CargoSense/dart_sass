@@ -93,3 +93,26 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
       - run: mix test
+  test_windows:
+    name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (Windows)
+    runs-on: windows-2025
+    strategy:
+      matrix:
+        include:
+          - pair:
+              elixir: "1.14"
+              otp: "25.0"
+          - pair:
+              elixir: "1.18"
+              otp: "27.0"
+    steps:
+      - uses: actions/checkout@v6
+      # Using `@main` is currently required for windows-2025 support.
+      - uses: erlef/setup-beam@main
+        with:
+          otp-version: ${{ matrix.pair.otp }}
+          elixir-version: ${{ matrix.pair.elixir }}
+          version-type: strict
+      - name: Install dependencies
+        run: mix deps.get
+      - run: mix test
