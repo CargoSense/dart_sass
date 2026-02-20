@@ -4,7 +4,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
   workflow_dispatch:
 
 env:
@@ -18,10 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         pair:
-          - elixir: "1.13"
-            otp: "24.3.4.10"
-          - elixir: "1.17"
-            otp: "27.0.1"
+          - elixir: "1.14"
+            otp: "25.0"
+          - elixir: "1.18"
+            otp: "27.0"
     steps:
       - uses: actions/checkout@v6
       - name: Generate .tool-versions file
@@ -43,15 +42,15 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: "1.13"
-              otp: "24.3.4.10"
+              elixir: "1.14"
+              otp: "25.0"
           - pair:
-              elixir: "1.17"
-              otp: "27.0.1"
+              elixir: "1.18"
+              otp: "27.0"
             lint: lint
     steps:
       - uses: actions/checkout@v6
-      - uses: erlef/setup-beam@main
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.pair.otp }}
           elixir-version: ${{ matrix.pair.elixir }}
@@ -72,3 +71,25 @@ jobs:
         if: ${{ ! matrix.lint }}
       - run: mix test --warnings-as-errors
         if: ${{ matrix.lint }}
+  test_alpine:
+    name: Elixir ${{ matrix.group.elixir }} OTP ${{ matrix.group.otp }} (Alpine ${{ matrix.group.alpine }})
+    runs-on: ubuntu-latest
+    container: hexpm/elixir:${{ matrix.group.elixir }}-erlang-${{ matrix.group.otp }}-alpine-${{ matrix.group.alpine }}
+    strategy:
+      matrix:
+        include:
+          - group:
+              alpine: "3.21.6"
+              elixir: "1.14"
+              otp: "25.0"
+          - group:
+              alpine: "3.23.3"
+              elixir: "1.18"
+              otp: "27.0"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Hex package manager
+        run: mix local.hex --force
+      - name: Install dependencies
+        run: mix deps.get
+      - run: mix test

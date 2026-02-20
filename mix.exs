@@ -1,14 +1,14 @@
 defmodule DartSass.MixProject do
   use Mix.Project
 
-  @version "0.7.1"
+  @version "0.8.0-dev"
   @source_url "https://github.com/CargoSense/dart_sass"
 
   def project do
     [
       app: :dart_sass,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.14",
       deps: deps(),
       description: "Mix tasks for installing and invoking sass",
       package: [
@@ -38,7 +38,6 @@ defmodule DartSass.MixProject do
 
   defp deps do
     [
-      {:castore, ">= 0.0.0"},
       {:ex_doc, ">= 0.0.0", only: :docs}
     ]
   end
