@@ -27,7 +27,7 @@
         "vscode": {
             "extensions": [
               "EditorConfig.EditorConfig",
-              "JakeBecker.elixir-ls",
+              "ExpertLSP.expert",
               "jasonnutter.vscode-codeowners"
             ]
         }
