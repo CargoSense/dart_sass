@@ -76,6 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     container: hexpm/elixir:${{ matrix.group.elixir }}-erlang-${{ matrix.group.otp }}-alpine-${{ matrix.group.alpine }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - group:
@@ -97,6 +98,7 @@ jobs:
     name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (Windows)
     runs-on: windows-2025
     strategy:
+      fail-fast: false
       matrix:
         include:
           - pair:

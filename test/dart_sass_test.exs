@@ -57,4 +57,65 @@ defmodule DartSassTest do
     Mix.Task.rerun("sass", ["default", "--no-source-map", "test/fixtures/app.scss", dest])
     assert File.read!(dest) == "body > p {\n  color: green;\n}\n"
   end
+
+  test "install_and_run/2 may be invoked concurrently" do
+    bin_paths = DartSass.bin_paths()
+
+    for path <- bin_paths do
+      case ok_or_retry(fn -> File.rm(path) end) do
+        :ok -> :ok
+        {:error, :enoent} -> :ok
+        {:error, reason} -> flunk("Could not delete #{inspect(path)}, reason: #{inspect(reason)}")
+      end
+    end
+
+    results =
+      [:extra1, :extra2, :extra3]
+      |> Enum.map(fn profile ->
+        Application.put_env(:dart_sass, profile, args: ["--version"])
+
+        Task.async(fn ->
+          ExUnit.CaptureIO.capture_io(fn ->
+            return_code = DartSass.install_and_run(profile, [])
+
+            # Let the first finished task set the binary files to read and execute only,
+            # so that the others will fail if they try to overwrite them.
+            for path <- bin_paths do
+              ok_or_retry(fn -> File.chmod(path, 0o500) end)
+            end
+
+            assert return_code == 0
+          end)
+        end)
+      end)
+      |> Task.await_many(:infinity)
+
+    for path <- bin_paths do
+      case ok_or_retry(fn -> File.chmod(path, 0o700) end) do
+        :ok -> :ok
+        {:error, reason} -> flunk("chmod failed on #{inspect(path)}, reason: #{inspect(reason)}")
+      end
+    end
+
+    assert Enum.all?(results)
+  end
+
+  # File operations are flaky for some Elixir versions on Windows. The `ok_or_retry/2` function
+  # provides a simplified way to retry an operation in a tight loop expecting an `:ok` result.
+  defp ok_or_retry(func, times \\ 10)
+       when is_function(func, 0) and
+              (is_integer(times) and times > 0) do
+    do_ok_or_retry(func, times, nil)
+  end
+
+  defp do_ok_or_retry(_func, times, last_error) when times < 0 do
+    last_error
+  end
+
+  defp do_ok_or_retry(func, times, _last_error) do
+    case func.() do
+      :ok -> :ok
+      {:error, _} = error -> do_ok_or_retry(func, times - 1, error)
+    end
+  end
 end
