@@ -22,7 +22,7 @@ jobs:
           - elixir: "1.18"
             otp: "27.0"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Generate .tool-versions file
         run: |
           echo "elixir ${{ matrix.pair.elixir }}" >> .tool-versions
@@ -49,7 +49,7 @@ jobs:
               otp: "27.0"
             lint: lint
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.pair.otp }}
@@ -88,7 +88,7 @@ jobs:
               elixir: "1.18"
               otp: "27.0"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install Hex package manager
         run: mix local.hex --force
       - name: Install dependencies
@@ -108,7 +108,7 @@ jobs:
               elixir: "1.18"
               otp: "27.0"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       # Using `@main` is currently required for windows-2025 support.
       - uses: erlef/setup-beam@main
         with:
