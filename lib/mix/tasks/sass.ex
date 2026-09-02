@@ -43,6 +43,7 @@ defmodule Mix.Tasks.Sass do
       Mix.Task.run("app.config")
     else
       Mix.Task.run("loadpaths")
+      Application.ensure_all_started(:dart_sass)
     end
 
     Mix.Task.reenable("sass")
