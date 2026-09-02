@@ -31,6 +31,8 @@ defmodule DartSassTest do
     assert ExUnit.CaptureIO.capture_io(fn ->
              assert DartSass.run(:default, ["--version"]) == 0
            end) =~ @version
+  after
+    Application.delete_env(:dart_sass, :version)
   end
 
   test "errors on invalid profile" do
@@ -47,7 +49,7 @@ defmodule DartSassTest do
     assert_raise RuntimeError, ~r/requires version >= 1.74.1, got: "1.72.0"/, fn ->
       Mix.Task.rerun("sass.install", ["--if-missing"])
     end
-
+  after
     Application.delete_env(:dart_sass, :version)
   end
 
