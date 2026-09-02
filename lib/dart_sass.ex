@@ -131,7 +131,7 @@ defmodule DartSass do
         dest_bin_paths(Path.dirname(Mix.Project.build_path()))
 
       true ->
-        dest_bin_paths("_build")
+        dest_bin_paths(Path.expand("_build"))
     end
   end
 
