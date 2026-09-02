@@ -364,13 +364,13 @@ defmodule DartSass do
       :httpc.set_options([{set_option, {{String.to_charlist(host), port}, []}}])
     end
 
-    case do_fetch(url) do
-      {:ok, {{_, 302, _}, headers, _}} ->
+    case fetch_file!(url) do
+      {{_, 302, _}, headers, _} ->
         {~c"location", download} = List.keyfind(headers, ~c"location", 0)
         download = List.to_string(download)
 
-        case do_fetch(download) do
-          {:ok, {{_, 200, _}, _, body}} ->
+        case fetch_file!(download) do
+          {{_, 200, _}, _, body} ->
             body
 
           other ->
@@ -381,6 +381,25 @@ defmodule DartSass do
         raise fetch_error_message(url, other)
     end
   end
+
+  defp fetch_file!(url, retry \\ true) do
+    case {retry, do_fetch(url)} do
+      {_, {:ok, response}} ->
+        response
+
+      {true, {:error, {:failed_connect, [{:to_address, _}, {inet, _, reason}]}}}
+      when inet in [:inet, :inet6] and
+             reason in [:ehostunreach, :enetunreach, :eprotonosupport, :nxdomain] ->
+        :httpc.set_options(ipfamily: fallback(inet))
+        fetch_file!(url, false)
+
+      {_, other} ->
+        raise fetch_error_message(url, other)
+    end
+  end
+
+  defp fallback(:inet), do: :inet6
+  defp fallback(:inet6), do: :inet
 
   defp do_fetch(url) do
     scheme = URI.parse(url).scheme
