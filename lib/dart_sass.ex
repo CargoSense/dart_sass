@@ -20,9 +20,13 @@ defmodule DartSass do
 
   ## Dart Sass configuration
 
-  There are two global configurations for the `dart_sass` application:
+  There are three global configurations for the `dart_sass` application:
 
     * `:version` - the expected Sass version.
+
+    * `:version_check` - whether to perform the version check or not.
+      Useful when you manage the Sass executable with an external
+      tool (eg. npm).
 
     * `:path` - the path to the Sass executable. By default
       it is automatically downloaded and placed inside the `_build` directory
@@ -59,7 +63,7 @@ defmodule DartSass do
 
   @doc false
   def start(_, _) do
-    unless Application.get_env(:dart_sass, :path) do
+    if version_check?() do
       unless Application.get_env(:dart_sass, :version) do
         Logger.warning("""
         dart_sass version is not configured. Please set it in your config files:
@@ -86,6 +90,12 @@ defmodule DartSass do
     end
 
     Supervisor.start_link([], strategy: :one_for_one, name: __MODULE__.Supervisor)
+  end
+
+  # Overriding :path disables version checking, see the moduledoc.
+  defp version_check? do
+    Application.get_env(:dart_sass, :version_check, true) and
+      is_nil(Application.get_env(:dart_sass, :path))
   end
 
   @doc false
