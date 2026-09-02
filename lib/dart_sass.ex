@@ -254,6 +254,7 @@ defmodule DartSass do
     end
 
     [dart, snapshot] = bin_paths()
+    File.mkdir_p!(Path.dirname(dart))
 
     bin_suffix = if windows?(), do: ".exe", else: ""
 
