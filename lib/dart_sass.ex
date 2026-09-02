@@ -18,6 +18,18 @@ defmodule DartSass do
           cd: Path.expand("../assets", __DIR__)
         ]
 
+  Environment variables given as lists are joined with the `PATH`
+  separator of the current operating system:
+
+      config :dart_sass,
+        default: [
+          args: ~w(css/app.scss ../priv/static/assets/app.css),
+          cd: Path.expand("../assets", __DIR__),
+          env: %{
+            "SASS_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]
+          }
+        ]
+
   ## Dart Sass configuration
 
   There are three global configurations for the `dart_sass` application:
@@ -192,7 +204,7 @@ defmodule DartSass do
 
     opts = [
       cd: config[:cd] || File.cwd!(),
-      env: config[:env] || %{},
+      env: normalize_env(config[:env] || %{}),
       into: IO.stream(:stdio, :line),
       stderr_to_stdout: true
     ]
@@ -212,6 +224,17 @@ defmodule DartSass do
   end
 
   defp windows?, do: elem(:os.type(), 0) == :win32
+
+  defp normalize_env(env) do
+    Map.new(env, fn
+      {key, value} when is_list(value) -> {key, Enum.join(value, path_sep())}
+      other -> other
+    end)
+  end
+
+  defp path_sep do
+    if windows?(), do: ";", else: ":"
+  end
 
   defp start_unique_install_worker do
     ref =
