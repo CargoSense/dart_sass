@@ -454,8 +454,7 @@ defmodule DartSass do
           depth: 2,
           customize_hostname_check: [
             match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-          ],
-          versions: protocol_versions()
+          ]
         ]
       ]
       |> maybe_add_proxy_auth(scheme),
@@ -495,17 +494,5 @@ defmodule DartSass do
     You may also install the "sass" executable manually, \
     see the docs: https://hexdocs.pm/dart_sass
     """
-  end
-
-  defp protocol_versions do
-    if otp_version() < 25 do
-      [:"tlsv1.2"]
-    else
-      [:"tlsv1.2", :"tlsv1.3"]
-    end
-  end
-
-  defp otp_version do
-    :erlang.system_info(:otp_release) |> List.to_integer()
   end
 end
