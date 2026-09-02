@@ -393,12 +393,21 @@ defmodule DartSass do
             body
 
           other ->
-            raise "couldn't fetch #{download}: #{inspect(other)}"
+            raise fetch_error_message(download, other)
         end
 
       other ->
-        raise "couldn't fetch #{url}: #{inspect(other)}"
+        raise fetch_error_message(url, other)
     end
+  end
+
+  defp fetch_error_message(url, reason) do
+    """
+    couldn't fetch #{url}: #{inspect(reason)}
+
+    You may also install the "sass" executable manually, \
+    see the docs: https://hexdocs.pm/dart_sass
+    """
   end
 
   defp protocol_versions do
