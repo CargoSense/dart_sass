@@ -1,6 +1,9 @@
 defmodule DartSass do
+  # https://github.com/sass/dart-sass/releases/latest
+  @latest_version "1.97.3"
+
   @moduledoc """
-  DartSass is a installer and runner for [Sass](https://sass-lang.com/guide).
+  DartSass is an installer and runner for [Sass](https://sass-lang.com/guide).
 
   ## Profiles
 
@@ -9,7 +12,7 @@ defmodule DartSass do
   directory and environment:
 
       config :dart_sass,
-        version: "1.97.3",
+        version: "#{@latest_version}",
         default: [
           args: ~w(css/app.scss ../priv/static/assets/app.css),
           cd: Path.expand("../assets", __DIR__)
@@ -87,7 +90,7 @@ defmodule DartSass do
 
   @doc false
   # Latest known version at the time of publishing.
-  def latest_version, do: "1.97.3"
+  def latest_version, do: @latest_version
 
   @doc """
   Returns the configured Sass version.
