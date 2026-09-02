@@ -72,6 +72,9 @@ config :dart_sass,
 
 Invoking `mix sass default` appends the task arguments to the ones configured above.
 
+> [!NOTE]
+> Profiles must be configured in your `config/config.exs`. The `mix sass` task runs without starting your application, so it does not pick up settings in `config/runtime.exs` unless you pass the `--runtime-config` flag.
+
 ## Using with Phoenix
 
 > [!NOTE]
