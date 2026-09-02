@@ -176,6 +176,10 @@ defmodule DartSass do
     config = config_for!(profile)
     config_args = config[:args] || []
 
+    if config_args == [] and extra_args == [] do
+      raise "no arguments passed to sass"
+    end
+
     opts = [
       cd: config[:cd] || File.cwd!(),
       env: config[:env] || %{},
