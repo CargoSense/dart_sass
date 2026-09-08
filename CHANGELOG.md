@@ -8,6 +8,12 @@
   * Updates Sass version to [`1.97.3`](https://github.com/sass/dart-sass/releases/tag/1.97.3).
   * Adds support for `-musl` package variants suitable for use on Alpine Linux.
   * Removes dependency on `:castore` in favor of using Erlang certificates.
+  * Adds `:version_check` configuration to skip the version check on startup.
+  * Joins environment variables given as lists using the `PATH` separator of the current operating system.
+  * Supports proxy authentication via the userinfo of `HTTP_PROXY`/`HTTPS_PROXY`.
+  * Falls back to IPv4/IPv6 when the download host is unreachable.
+  * Raises when no arguments are passed to `sass`.
+  * Ensures loadpaths are set up and the `:dart_sass` application is started by the Mix tasks.
 
 ## v0.7.1
 

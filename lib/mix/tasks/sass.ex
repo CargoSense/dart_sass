@@ -42,6 +42,7 @@ defmodule Mix.Tasks.Sass do
     if opts[:runtime_config] do
       Mix.Task.run("app.config")
     else
+      Mix.Task.run("loadpaths")
       Application.ensure_all_started(:dart_sass)
     end
 

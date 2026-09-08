@@ -1,6 +1,9 @@
 defmodule DartSass do
+  # https://github.com/sass/dart-sass/releases/latest
+  @latest_version "1.97.3"
+
   @moduledoc """
-  DartSass is a installer and runner for [Sass](https://sass-lang.com/guide).
+  DartSass is an installer and runner for [Sass](https://sass-lang.com/guide).
 
   ## Profiles
 
@@ -9,17 +12,33 @@ defmodule DartSass do
   directory and environment:
 
       config :dart_sass,
-        version: "1.97.3",
+        version: "#{@latest_version}",
         default: [
           args: ~w(css/app.scss ../priv/static/assets/app.css),
           cd: Path.expand("../assets", __DIR__)
         ]
 
+  Environment variables given as lists are joined with the `PATH`
+  separator of the current operating system:
+
+      config :dart_sass,
+        default: [
+          args: ~w(css/app.scss ../priv/static/assets/app.css),
+          cd: Path.expand("../assets", __DIR__),
+          env: %{
+            "SASS_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]
+          }
+        ]
+
   ## Dart Sass configuration
 
-  There are two global configurations for the `dart_sass` application:
+  There are three global configurations for the `dart_sass` application:
 
     * `:version` - the expected Sass version.
+
+    * `:version_check` - whether to perform the version check or not.
+      Useful when you manage the Sass executable with an external
+      tool (eg. npm).
 
     * `:path` - the path to the Sass executable. By default
       it is automatically downloaded and placed inside the `_build` directory
@@ -56,7 +75,7 @@ defmodule DartSass do
 
   @doc false
   def start(_, _) do
-    unless Application.get_env(:dart_sass, :path) do
+    if version_check?() do
       unless Application.get_env(:dart_sass, :version) do
         Logger.warning("""
         dart_sass version is not configured. Please set it in your config files:
@@ -85,9 +104,15 @@ defmodule DartSass do
     Supervisor.start_link([], strategy: :one_for_one, name: __MODULE__.Supervisor)
   end
 
+  # Overriding :path disables version checking, see the moduledoc.
+  defp version_check? do
+    Application.get_env(:dart_sass, :version_check, true) and
+      is_nil(Application.get_env(:dart_sass, :path))
+  end
+
   @doc false
   # Latest known version at the time of publishing.
-  def latest_version, do: "1.97.3"
+  def latest_version, do: @latest_version
 
   @doc """
   Returns the configured Sass version.
@@ -131,7 +156,7 @@ defmodule DartSass do
         dest_bin_paths(Path.dirname(Mix.Project.build_path()))
 
       true ->
-        dest_bin_paths("_build")
+        dest_bin_paths(Path.expand("_build"))
     end
   end
 
@@ -173,9 +198,13 @@ defmodule DartSass do
     config = config_for!(profile)
     config_args = config[:args] || []
 
+    if config_args == [] and extra_args == [] do
+      raise "no arguments passed to sass"
+    end
+
     opts = [
       cd: config[:cd] || File.cwd!(),
-      env: config[:env] || %{},
+      env: normalize_env(config[:env] || %{}),
       into: IO.stream(:stdio, :line),
       stderr_to_stdout: true
     ]
@@ -195,6 +224,17 @@ defmodule DartSass do
   end
 
   defp windows?, do: elem(:os.type(), 0) == :win32
+
+  defp normalize_env(env) do
+    Map.new(env, fn
+      {key, value} when is_list(value) -> {key, Enum.join(value, path_sep())}
+      other -> other
+    end)
+  end
+
+  defp path_sep do
+    if windows?(), do: ";", else: ":"
+  end
 
   defp start_unique_install_worker do
     ref =
@@ -216,6 +256,8 @@ defmodule DartSass do
   @doc """
   Installs, if not available, and then runs `sass`.
 
+  This task may be invoked concurrently and it will avoid concurrent installs.
+
   Returns the same as `run/2`.
   """
   def install_and_run(profile, args) do
@@ -226,6 +268,8 @@ defmodule DartSass do
 
   @doc """
   Installs Sass with `configured_version/0`.
+
+  If invoked concurrently, this task will perform concurrent installs.
   """
   def install do
     target = target()
@@ -254,6 +298,7 @@ defmodule DartSass do
     end
 
     [dart, snapshot] = bin_paths()
+    File.mkdir_p!(Path.dirname(dart))
 
     bin_suffix = if windows?(), do: ".exe", else: ""
 
@@ -343,65 +388,111 @@ defmodule DartSass do
   defp maybe_add_abi_suffix(_), do: ""
 
   defp fetch_body!(url) do
-    url = String.to_charlist(url)
+    scheme = URI.parse(url).scheme
     Logger.debug("Downloading dart-sass from #{url}")
 
     {:ok, _} = Application.ensure_all_started(:inets)
     {:ok, _} = Application.ensure_all_started(:ssl)
 
-    if proxy = System.get_env("HTTP_PROXY") || System.get_env("http_proxy") do
-      Logger.debug("Using HTTP_PROXY: #{proxy}")
+    if proxy = proxy_for_scheme(scheme) do
       %{host: host, port: port} = URI.parse(proxy)
-      :httpc.set_options([{:proxy, {{String.to_charlist(host), port}, []}}])
+      Logger.debug("Using #{String.upcase(scheme)}_PROXY: #{proxy}")
+      set_option = if "https" == scheme, do: :https_proxy, else: :proxy
+      :httpc.set_options([{set_option, {{String.to_charlist(host), port}, []}}])
     end
 
-    if proxy = System.get_env("HTTPS_PROXY") || System.get_env("https_proxy") do
-      Logger.debug("Using HTTPS_PROXY: #{proxy}")
-      %{host: host, port: port} = URI.parse(proxy)
-      :httpc.set_options([{:https_proxy, {{String.to_charlist(host), port}, []}}])
-    end
-
-    http_options = [
-      autoredirect: false,
-      ssl: [
-        verify: :verify_peer,
-        # https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/inets
-        cacerts: :public_key.cacerts_get(),
-        depth: 2,
-        customize_hostname_check: [
-          match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-        ],
-        versions: protocol_versions()
-      ]
-    ]
-
-    case :httpc.request(:get, {url, []}, http_options, []) do
-      {:ok, {{_, 302, _}, headers, _}} ->
+    case fetch_file!(url) do
+      {{_, 302, _}, headers, _} ->
         {~c"location", download} = List.keyfind(headers, ~c"location", 0)
-        options = [body_format: :binary]
+        download = List.to_string(download)
 
-        case :httpc.request(:get, {download, []}, http_options, options) do
-          {:ok, {{_, 200, _}, _, body}} ->
+        case fetch_file!(download) do
+          {{_, 200, _}, _, body} ->
             body
 
           other ->
-            raise "couldn't fetch #{download}: #{inspect(other)}"
+            raise fetch_error_message(download, other)
         end
 
       other ->
-        raise "couldn't fetch #{url}: #{inspect(other)}"
+        raise fetch_error_message(url, other)
     end
   end
 
-  defp protocol_versions do
-    if otp_version() < 25 do
-      [:"tlsv1.2"]
+  defp fetch_file!(url, retry \\ true) do
+    case {retry, do_fetch(url)} do
+      {_, {:ok, response}} ->
+        response
+
+      {true, {:error, {:failed_connect, [{:to_address, _}, {inet, _, reason}]}}}
+      when inet in [:inet, :inet6] and
+             reason in [:ehostunreach, :enetunreach, :eprotonosupport, :nxdomain] ->
+        :httpc.set_options(ipfamily: fallback(inet))
+        fetch_file!(url, false)
+
+      {_, other} ->
+        raise fetch_error_message(url, other)
+    end
+  end
+
+  defp fallback(:inet), do: :inet6
+  defp fallback(:inet6), do: :inet
+
+  defp do_fetch(url) do
+    scheme = URI.parse(url).scheme
+    url = String.to_charlist(url)
+
+    :httpc.request(
+      :get,
+      {url, []},
+      [
+        autoredirect: false,
+        ssl: [
+          verify: :verify_peer,
+          # https://erlef.github.io/security-wg/secure_coding_and_deployment_hardening/inets
+          cacerts: :public_key.cacerts_get(),
+          depth: 2,
+          customize_hostname_check: [
+            match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+          ]
+        ]
+      ]
+      |> maybe_add_proxy_auth(scheme),
+      body_format: :binary
+    )
+  end
+
+  defp proxy_for_scheme("http") do
+    System.get_env("HTTP_PROXY") || System.get_env("http_proxy")
+  end
+
+  defp proxy_for_scheme("https") do
+    System.get_env("HTTPS_PROXY") || System.get_env("https_proxy")
+  end
+
+  defp maybe_add_proxy_auth(http_options, scheme) do
+    case proxy_auth(scheme) do
+      nil -> http_options
+      auth -> [{:proxy_auth, auth} | http_options]
+    end
+  end
+
+  defp proxy_auth(scheme) do
+    with proxy when is_binary(proxy) <- proxy_for_scheme(scheme),
+         %{userinfo: userinfo} when is_binary(userinfo) <- URI.parse(proxy),
+         [username, password] <- String.split(userinfo, ":") do
+      {String.to_charlist(username), String.to_charlist(password)}
     else
-      [:"tlsv1.2", :"tlsv1.3"]
+      _ -> nil
     end
   end
 
-  defp otp_version do
-    :erlang.system_info(:otp_release) |> List.to_integer()
+  defp fetch_error_message(url, reason) do
+    """
+    couldn't fetch #{url}: #{inspect(reason)}
+
+    You may also install the "sass" executable manually, \
+    see the docs: https://hexdocs.pm/dart_sass
+    """
   end
 end
