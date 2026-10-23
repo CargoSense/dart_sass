@@ -14,6 +14,7 @@
   * Falls back to IPv4/IPv6 when the download host is unreachable.
   * Raises when no arguments are passed to `sass`.
   * Ensures loadpaths are set up and the `:dart_sass` application is started by the Mix tasks.
+  * Allows up to 32 KiB of response headers when downloading Sass, so the install works on OTP 27+ now that GitHub's release redirect sends more than `:httpc`'s default 10 KiB limit ([#67](https://github.com/CargoSense/dart_sass/issues/67)).
 
 ## v0.7.1
 
