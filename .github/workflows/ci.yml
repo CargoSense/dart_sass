@@ -36,7 +36,11 @@ jobs:
       - run: mix test
   test_ubuntu:
     name: Elixir ${{ matrix.pair.elixir }} OTP ${{ matrix.pair.otp }} (Ubuntu)
-    runs-on: ubuntu-latest
+    # `ubuntu-latest` is Ubuntu 26.04 since October 2026, and hex.pm's
+    # prebuilt OTP list for it starts at OTP 26.0, so setup-beam cannot find
+    # the OTP 25.0 matrix entry there. 24.04 has builds for every OTP in the
+    # matrix.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
