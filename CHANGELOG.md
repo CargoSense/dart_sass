@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.8.0-dev
+## v0.8.0 (2026-10-23)
 
 **Potentially breaking change:** Due to inconsistencies in upstream release names, you must specify a `:version` >= 1.74.1 on all platforms.
 
@@ -15,12 +15,7 @@
   * Raises when no arguments are passed to `sass`.
   * Ensures loadpaths are set up and the `:dart_sass` application is started by the Mix tasks.
   * Allows up to 32 KiB of response headers when downloading Sass, so the install works on OTP 27+ now that GitHub's release redirect sends more than `:httpc`'s default 10 KiB limit ([#67](https://github.com/CargoSense/dart_sass/issues/67)).
-
-## v0.7.1
-
-  * Update references to Dart Sass version to use latest `1.77.8` release
-  * Update README to reflect minor version increase to `~> 0.7`, Dart Sass to `1.77.8`, edge Phoenix to `~> 1.7.14`
-  * Fix Warning for elixir 1.17
+  * Fixes a compiler warning on Elixir 1.17.
 
 ## v0.7.0 (2023-06-27)
 

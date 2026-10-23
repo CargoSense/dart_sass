@@ -15,7 +15,7 @@ If your application builds assets in production, configure DartSass as a runtime
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.8", runtime: Mix.env() == :dev}
   ]
 end
 ```
@@ -25,7 +25,7 @@ If your application's assets are precompiled during development, configure DartS
 ```elixir
 def deps do
   [
-    {:dart_sass, "~> 0.7", only: :dev}
+    {:dart_sass, "~> 0.8", only: :dev}
   ]
 end
 ```
@@ -86,7 +86,7 @@ First, add Phoenix as a dependency to your application's `mix.exs`:
 def deps do
   [
     {:phoenix, "~> 1.7.14"},
-    {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev}
+    {:dart_sass, "~> 0.8", runtime: Mix.env() == :dev}
   ]
 end
 ```
