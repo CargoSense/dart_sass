@@ -458,7 +458,15 @@ defmodule DartSass do
         ]
       ]
       |> maybe_add_proxy_auth(scheme),
-      body_format: :binary
+      # GitHub's redirect for a release download carries about 10.8 KB of
+      # headers (its content-security-policy header alone is about 9.2 KB).
+      # Since OTP 27, :httpc rejects responses whose headers exceed
+      # max_header_size, 10,240 bytes by default, with
+      # {:error, {:header_too_long, {:max, 10240}}} before the redirect can be
+      # followed. 32 KiB leaves room for the headers to grow and still caps a
+      # runaway response. OTP 25 and 26 impose no limit and ignore the option.
+      body_format: :binary,
+      max_header_size: 32_768
     )
   end
 
